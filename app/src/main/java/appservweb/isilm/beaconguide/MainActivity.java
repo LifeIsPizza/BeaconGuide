@@ -24,6 +24,11 @@ public class MainActivity extends Activity implements
     private Button btnSpeak;
     private EditText txtText;
 
+
+
+
+
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

@@ -1,6 +1,15 @@
 package appservweb.isilm.beaconguide;
 
+import android.Manifest;
+import android.app.AlertDialog;
 import android.app.LauncherActivity;
+import android.bluetooth.BluetoothAdapter;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.os.Build;
 import android.speech.tts.TextToSpeech;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -29,15 +38,18 @@ public class MainMenu extends AppCompatActivity implements TextToSpeech.OnInitLi
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
+        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setActionBar(toolbar);
 
         Log.d("onCreate", "NewTTS");
-        tts = new TextToSpeech(this, this);
         btnDownloadMap = (Button) findViewById(R.id.btnDownloadMap);
         menuListItems = (ListView) findViewById(R.id.lstDownloadedMaps);
-        ListViewSpeaker speaker = new ListViewSpeaker(menuListItems, this, this);
-        speaker.initialize();
+        if(checkNetwork() && checkBluetooth(mBluetoothAdapter)) {
+            tts = new TextToSpeech(this, this);
+            ListViewSpeaker speaker = new ListViewSpeaker(menuListItems, this, this);
+            speaker.initialize();
+        }
         String[] values = new String[] { "Android List View",
                 "Adapter implementation",
                 "Simple List View In Android",
@@ -52,6 +64,21 @@ public class MainMenu extends AppCompatActivity implements TextToSpeech.OnInitLi
                 android.R.layout.simple_list_item_1, android.R.id.text1, values);
 
         menuListItems.setAdapter(adapter);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (this.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {             final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle("This app needs location access");
+                builder.setMessage("Please grant location access so this app can detect beacons.");
+                builder.setPositiveButton(android.R.string.ok, null);
+                builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                    @Override
+                    public void onDismiss(DialogInterface dialog) {
+                        requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
+                    }
+                });
+                builder.show();
+            }
+        }
     }
 
     @Override
@@ -84,6 +111,56 @@ public class MainMenu extends AppCompatActivity implements TextToSpeech.OnInitLi
         getMenuInflater().inflate(R.menu.options, menu);
         return true;
     }
+
+    public boolean isOnline() {
+        ConnectivityManager cm =
+                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        return netInfo != null && netInfo.isConnectedOrConnecting();
+    }
+
+    public boolean checkBluetooth(BluetoothAdapter mBluetoothAdapter){
+        if (!mBluetoothAdapter.isEnabled()){
+            AlertDialog alertDialog = new AlertDialog.Builder(MainMenu.this).create();
+            alertDialog.setTitle("Warning");
+            alertDialog.setMessage("Bluetooth non abilitato. Abilitare e riaprire l'app.");
+            alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                            finish();
+                        }
+                    });
+            alertDialog.show();
+            return false;
+
+        }
+        else{
+            return true;
+        }
+    }
+
+    public boolean checkNetwork(){
+        if (!isOnline()){
+            AlertDialog alertDialog = new AlertDialog.Builder(MainMenu.this).create();
+            alertDialog.setTitle("Warning");
+            alertDialog.setMessage("Connessione alla rete non abilitata. Abilitare e riaprire l'app per scaricare dati mappe.");
+            alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                            finish();
+                        }
+                    });
+            alertDialog.show();
+            return false;
+
+        }
+        else{
+            return true;
+        }
+    }
+
 
 //    @Override
 //        public boolean onOptionsItemSelected(MenuItem item) {

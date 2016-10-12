@@ -32,7 +32,7 @@ public class MainMenu extends AppCompatActivity implements TextToSpeech.OnInitLi
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setActionBar(toolbar);
 
-        Log.d(null, "NewTTS");
+        Log.d("onCreate", "NewTTS");
         tts = new TextToSpeech(this, this);
         btnDownloadMap = (Button) findViewById(R.id.btnDownloadMap);
         menuListItems = (ListView) findViewById(R.id.lstDownloadedMaps);

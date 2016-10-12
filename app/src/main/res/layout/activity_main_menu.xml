@@ -9,6 +9,11 @@
     tools:context="appservweb.isilm.beaconguide.MainMenu">
 
 
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+
     <android.widget.Toolbar
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -16,18 +21,21 @@
         android:theme="?attr/actionBarTheme"
         android:minHeight="?attr/actionBarSize"
         android:id="@+id/toolbar"
-        app:title="@string/app_name"
+        android:title="@string/app_name"
         />
 
 
     <android.support.v4.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_below="@id/toolbar"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         >
 
         <include layout="@layout/content_main_menu" />
     </android.support.v4.widget.NestedScrollView>
+
+    </RelativeLayout>
 
 
 </android.support.design.widget.CoordinatorLayout>

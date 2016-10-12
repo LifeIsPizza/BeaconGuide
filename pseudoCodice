@@ -1,0 +1,23 @@
+Pseudo codice algoritmo di navigazione:
+
+MODULO PER LA NAVIGAZIONE
+-Se è stata settata una zonaDestinazione:
+-zonaCurrent = zonaCurrent()
+-if zonaCurrent == zonaDestinazione
+  -"sei arrivato a destinazione!"
+-else
+  -zonaNext = zonaNext(zonaCurrent,zonaDestinazione)
+  -showOnMap(zonaCurrent,zonaNext)                  //mostra nella mappa dove si trova, e mostra anche 
+                                                    //le indicazioni per la navigazione
+ 
+MODULO GET BEACON ED ORIENTAMENTO
+-while(true)
+  -actualBeacon = getBeacon()
+  -orientation = getOrientation()
+  
+FUNZIONE zonaCurrent()
+  -return actualBeacon.zona
+  
+FUNZIONE zonaNext(zonaCurrent, zonaDestinazione)
+  -percorso[] = BFS(zonaCurrent, zonaDestinazione, grafo)
+  -return percorso[1]

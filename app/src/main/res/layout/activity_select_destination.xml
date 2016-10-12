@@ -8,7 +8,19 @@
     tools:context="appservweb.isilm.beaconguide.MainActivity">
 
 
-    <include layout="@layout/content_main" />
+    <android.widget.Toolbar
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/colorPrimary"
+        android:theme="?attr/actionBarTheme"
+        android:minHeight="?attr/actionBarSize"
+        android:id="@+id/toolbar"
+        app:title="@string/app_name"
+        />
+
+
+    <include layout="@layout/content_select_destination" />
 
 
 </android.support.design.widget.CoordinatorLayout>
+

@@ -5,15 +5,18 @@
     android:weightSum="1">
 
 
+    <TextView
+        android:text="Dove desideri andare?"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/textView"
+        android:layout_weight="0.22"
+        android:textSize="36sp" />
+
     <ListView
         android:layout_width="match_parent"
         android:layout_height="416dp"
-        android:id="@+id/lstDownloadedMaps"
-        android:layout_weight="0.98" />
+        android:id="@+id/lstMapPlaces"
+        android:layout_weight="0.47" />
 
-    <Button
-        android:text="Download New Map"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/btnDownloadMap" />
 </LinearLayout>

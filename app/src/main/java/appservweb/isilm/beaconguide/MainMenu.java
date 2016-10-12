@@ -32,6 +32,7 @@ public class MainMenu extends AppCompatActivity implements TextToSpeech.OnInitLi
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setActionBar(toolbar);
 
+        Log.d(null, "NewTTS");
         tts = new TextToSpeech(this, this);
         btnDownloadMap = (Button) findViewById(R.id.btnDownloadMap);
         menuListItems = (ListView) findViewById(R.id.lstDownloadedMaps);
@@ -56,8 +57,9 @@ public class MainMenu extends AppCompatActivity implements TextToSpeech.OnInitLi
     @Override
     public void onInit(int status) {
 
+        Log.d("onInit", "If status tts success");
         if (status == TextToSpeech.SUCCESS) {
-
+            Log.d("onInit", "setLanguage");
             int result = tts.setLanguage(Locale.ITALIAN);
 
             if (result == TextToSpeech.LANG_MISSING_DATA

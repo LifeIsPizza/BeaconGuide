@@ -3,6 +3,7 @@ package appservweb.isilm.beaconguide;
 import android.content.Context;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeech.OnInitListener;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.EditText;
@@ -38,6 +39,7 @@ public class ListViewSpeaker {
     }
 
     private void speakItem(String item) {
+        Log.d(null, "Speaking:");
         tts.speak(item, TextToSpeech.QUEUE_FLUSH, null, null);
     }
 

@@ -3,6 +3,7 @@ package appservweb.isilm.beaconguide;
 import android.os.Bundle;
 import android.view.View;
 
+import java.io.Console;
 import java.util.Locale;
 import android.app.Activity;
 import android.speech.tts.TextToSpeech;
@@ -65,9 +66,11 @@ public class MainActivity extends Activity implements
             if (result == TextToSpeech.LANG_MISSING_DATA
                     || result == TextToSpeech.LANG_NOT_SUPPORTED) {
                 Log.e("TTS", "This Language is not supported");
+
             } else {
                 btnSpeak.setEnabled(true);
-                speakOut();
+                //speakOut();
+                Log.d("Testing", "Inizializzazione corretta");
             }
 
         } else {
@@ -80,6 +83,7 @@ public class MainActivity extends Activity implements
 
         String text = txtText.getText().toString();
 
-        tts.speak(text, TextToSpeech.QUEUE_FLUSH, null);
+        //tts.speak(text, TextToSpeech.QUEUE_FLUSH, null);
+        tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
     }
 }

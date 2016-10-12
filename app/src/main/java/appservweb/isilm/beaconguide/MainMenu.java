@@ -1,12 +1,29 @@
 package appservweb.isilm.beaconguide;
 
+import android.app.LauncherActivity;
+import android.speech.tts.TextToSpeech;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.util.Log;
 
-public class MainMenu extends AppCompatActivity {
+import java.util.Locale;
+
+public class MainMenu extends AppCompatActivity implements TextToSpeech.OnInitListener {
+
+    //Variables
+    private TextToSpeech tts;
+    private Button btnSpeak;
+    private ListView menuListItems;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -14,7 +31,49 @@ public class MainMenu extends AppCompatActivity {
         setContentView(R.layout.activity_main_menu);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setActionBar(toolbar);
-        //setSupportActionBar(toolbar);
+
+        tts = new TextToSpeech(this, this);
+        btnSpeak = (Button) findViewById(R.id.btnSpeak);
+        menuListItems = (ListView) findViewById(R.id.lstDownloadedMaps);
+        ListViewSpeaker speaker = new ListViewSpeaker(menuListItems, this, this);
+        speaker.initialize();
+        String[] values = new String[] { "Android List View",
+                "Adapter implementation",
+                "Simple List View In Android",
+                "Create List View Android",
+                "Android Example",
+                "List View Source Code",
+                "List View Array Adapter",
+                "Android Example List View"
+        };
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
+                android.R.layout.simple_list_item_1, android.R.id.text1, values);
+
+        menuListItems.setAdapter(adapter);
+    }
+
+    @Override
+    public void onInit(int status) {
+
+        if (status == TextToSpeech.SUCCESS) {
+
+            int result = tts.setLanguage(Locale.ITALIAN);
+
+            if (result == TextToSpeech.LANG_MISSING_DATA
+                    || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                Log.e("TTS", "This Language is not supported");
+
+            } else {
+                //btnSpeak.setEnabled(true);
+                //speakOut();
+                Log.d("Testing", "Inizializzazione corretta");
+            }
+
+        } else {
+            Log.e("TTS", "Initilization Failed!");
+        }
+
     }
 
     @Override
@@ -38,6 +97,7 @@ public class MainMenu extends AppCompatActivity {
 //
 //        return super.onOptionsItemSelected(item);
 //    }
+
 
 }
 

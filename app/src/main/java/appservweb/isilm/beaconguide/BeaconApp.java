@@ -55,7 +55,11 @@ public class BeaconApp extends Application {
     private Region region = new Region("Test",
             UUID.fromString("B9407F30-F5F8-466E-AFF9-25556B57FE6D"),
             null, null);
+    private static final String stringURL = "http://www.manufattidigitali.com/prova/mobile/getJsonDataFromServer";
     private boolean haveNotify = false;
+    private static String jsonString = "";
+    private static JSONObject jsonObj = null;
+
 
 
     @Override
@@ -118,9 +122,55 @@ public class BeaconApp extends Application {
                 public void onBeaconsDiscovered(Region region, List<Beacon> list) {
                     if (!list.isEmpty()) {
                         if (!haveNotify){
-                            Beacon nearestBeacon = list.get(0);
+                            Beacon nearestBeacon = list.get(0); //Il primo della lista è il più vicino
                             showNotification("Entrato", "Entrato nella regione");
                             haveNotify = true;
+                            try {
+                                jsonString = new AsyncJsonGet().execute(stringURL).get();
+                            } catch (Exception e) {
+                                Log.d("JSONTEST", "FAIL! " + jsonString);
+
+                                Toast.makeText(getApplicationContext(), "Failed to retrieve JSON from URL", Toast.LENGTH_LONG).show();
+                                System.exit(0);
+                                AlertDialog alertDialog = new AlertDialog.Builder(getBaseContext()).create();
+                                alertDialog.setTitle("Warning");
+                                alertDialog.setMessage("Failed to retrieve JSON");
+                                alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                                        new DialogInterface.OnClickListener() {
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                dialog.dismiss();
+                                                System.exit(0);
+                                            }
+                                        });
+                                alertDialog.show();
+
+                            }
+                            try {
+                                Log.d("JSONTEST", "Stringa: " + jsonString);
+                                jsonObj = new JSONObject(jsonString);
+                                //addItems();
+
+                            } catch (Exception e) {
+                                Log.d("JSONTEST", "FAIL! " + jsonString);
+
+                                Toast.makeText(getApplicationContext(), "JSON Malformed", Toast.LENGTH_LONG).show();
+                                System.exit(0);
+                                AlertDialog alertDialog = new AlertDialog.Builder(getBaseContext()).create();
+                                alertDialog.setTitle("Warning");
+                                alertDialog.setMessage("JSON Malformed");
+                                alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                                        new DialogInterface.OnClickListener() {
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                dialog.dismiss();
+                                                System.exit(0);
+                                            }
+                                        });
+                                alertDialog.show();
+
+                            }
+
+                            //Gestione del beacon più vicino, eventuale message passing se cambia.
+                            //Lista dei beacon ranged è in "list"
                         }
                     }
                     else {
@@ -173,5 +223,55 @@ public class BeaconApp extends Application {
                 beaconManager.startRanging(region);
             }
         });
+    }
+    private class AsyncJsonGet extends AsyncTask<String, Void, String> {
+        @Override
+        protected String doInBackground(String... params) {
+            try {
+                return downloadUrl(params[0]);
+            } catch (/*IO*/Exception e) {
+                e.printStackTrace();
+                return "Unable to retrieve URL";
+            }
+        }
+        private String downloadUrl(String myurl) throws IOException {
+            InputStream is = null;
+
+            try {
+                URL url = new URL(myurl);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setReadTimeout(10000 /* milliseconds */);
+                conn.setConnectTimeout(10000 /* milliseconds */);
+                conn.setRequestMethod("GET");
+                conn.setDoInput(true);
+                // Starts the query
+                conn.connect();
+                int response = conn.getResponseCode();
+                Log.d("debug", "The response is: " + response);
+                is = new BufferedInputStream(conn.getInputStream());
+                BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+                StringBuilder sb = new StringBuilder();
+                String newLine = System.getProperty("line.separator");
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    sb.append(line + newLine);
+                }
+                String result = sb.toString();
+                return result;
+
+            }
+
+            finally {
+                if (is != null) {
+                    is.close();
+                }
+            }
+        }
+        @Override
+        protected void onPostExecute(String result) {
+            jsonString = result;
+        }
+
+
     }
 }

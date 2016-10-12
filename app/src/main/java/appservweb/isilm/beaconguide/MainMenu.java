@@ -21,7 +21,7 @@ public class MainMenu extends AppCompatActivity implements TextToSpeech.OnInitLi
 
     //Variables
     private TextToSpeech tts;
-    private Button btnSpeak;
+    private Button btnDownloadMap;
     private ListView menuListItems;
 
 
@@ -33,7 +33,7 @@ public class MainMenu extends AppCompatActivity implements TextToSpeech.OnInitLi
         setActionBar(toolbar);
 
         tts = new TextToSpeech(this, this);
-        btnSpeak = (Button) findViewById(R.id.btnSpeak);
+        btnDownloadMap = (Button) findViewById(R.id.btnDownloadMap);
         menuListItems = (ListView) findViewById(R.id.lstDownloadedMaps);
         ListViewSpeaker speaker = new ListViewSpeaker(menuListItems, this, this);
         speaker.initialize();

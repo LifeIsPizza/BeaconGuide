@@ -27,13 +27,11 @@ public class ListViewSpeaker {
 
     public void initialize(){
         speakview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Object listItem = speakview.getItemAtPosition(position);
                 speakItem(listItem.toString());
             }
-
         });
 
     }

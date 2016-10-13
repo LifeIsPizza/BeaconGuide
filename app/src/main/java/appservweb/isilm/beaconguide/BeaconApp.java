@@ -50,7 +50,7 @@ import java.util.UUID;
 public class BeaconApp extends Application {
 
     private Intent notifyIntent;
-    private BeaconManager beaconManager;
+    private BeaconManager beaconManager = null;
     private NotificationManager notificationManager;
     private Region region = new Region("Test",
             UUID.fromString("B9407F30-F5F8-466E-AFF9-25556B57FE6D"),
@@ -66,139 +66,154 @@ public class BeaconApp extends Application {
     public void onCreate() {
         notifyIntent = new Intent(this, MainMenu.class);
 
+        //Callback di lifecycle, utilizzati per accendere/spegnere ranging e manager se l'app va in pausa/stop
         ActivityLifecycleCallbacks callbacks = new ActivityLifecycleCallbacks() {
             @Override
             public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
+                //Fai cose ad attività creata
             }
 
             @Override
             public void onActivityStarted(Activity activity) {
-                connectToManager();
+                if (isOnline()) { //Va fatto il check prima altrimenti spamma notifiche
+                    //L'app non muore completamente nemmeno dopo system exit, ripartendo il flag è resettato e spamma notifiche
+                    connectToManager();
+                }
             }
 
             @Override
             public void onActivityResumed(Activity activity) {
-
+                //Fai cose ad attività ripresa
             }
 
             @Override
             public void onActivityPaused(Activity activity) {
-
+                //Fai cose ad attività pausata
             }
 
             @Override
             public void onActivityStopped(Activity activity) {
-                beaconManager.disconnect();
+                if(beaconManager!=null) {
+                    beaconManager.disconnect();
+                    beaconManager = null;
+                }
                 Log.d("BeaconApp", "Stopping");
             }
 
             @Override
             public void onActivitySaveInstanceState(Activity activity, Bundle outState) {
                 Log.d("BeaconApp", "SaveState");
-
             }
 
             @Override
             public void onActivityDestroyed(Activity activity) {
                 Log.d("BeaconApp", "ActivityDestroyed");
-                beaconManager.disconnect();
+//                if(beaconManager!=null)
+//                    beaconManager.disconnect();
             }
         };
 
+        //Registrazione delle callback sull'attività
         this.registerActivityLifecycleCallbacks(callbacks);
         super.onCreate();
         //EstimoteSDK.enableDebugLogging(true);
-
-        connectToManager();
-    }
-
-    public void connectToManager(){
-
-
-        beaconManager = new BeaconManager(getBaseContext());
-        if (isOnline()) {
-            beaconManager.setRangingListener(new BeaconManager.RangingListener() {
-                @Override
-                public void onBeaconsDiscovered(Region region, List<Beacon> list) {
-                    if (!list.isEmpty()) {
-                        if (!haveNotify){
-                            Beacon nearestBeacon = list.get(0); //Il primo della lista è il più vicino
-                            showNotification("Entrato", "Entrato nella regione");
-                            haveNotify = true;
-                            try {
-                                jsonString = new AsyncJsonGet().execute(stringURL).get();
-                            } catch (Exception e) {
-                                Log.d("JSONTEST", "FAIL! " + jsonString);
-
-                                Toast.makeText(getApplicationContext(), "Failed to retrieve JSON from URL", Toast.LENGTH_LONG).show();
-                                System.exit(0);
-                                AlertDialog alertDialog = new AlertDialog.Builder(getBaseContext()).create();
-                                alertDialog.setTitle("Warning");
-                                alertDialog.setMessage("Failed to retrieve JSON");
-                                alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
-                                        new DialogInterface.OnClickListener() {
-                                            public void onClick(DialogInterface dialog, int which) {
-                                                dialog.dismiss();
-                                                System.exit(0);
-                                            }
-                                        });
-                                alertDialog.show();
-
-                            }
-                            try {
-                                Log.d("JSONTEST", "Stringa: " + jsonString);
-                                jsonObj = new JSONObject(jsonString);
-                                //addItems();
-
-                            } catch (Exception e) {
-                                Log.d("JSONTEST", "FAIL! " + jsonString);
-
-                                Toast.makeText(getApplicationContext(), "JSON Malformed", Toast.LENGTH_LONG).show();
-                                System.exit(0);
-                                AlertDialog alertDialog = new AlertDialog.Builder(getBaseContext()).create();
-                                alertDialog.setTitle("Warning");
-                                alertDialog.setMessage("JSON Malformed");
-                                alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
-                                        new DialogInterface.OnClickListener() {
-                                            public void onClick(DialogInterface dialog, int which) {
-                                                dialog.dismiss();
-                                                System.exit(0);
-                                            }
-                                        });
-                                alertDialog.show();
-
-                            }
-
-                            //Gestione del beacon più vicino, eventuale message passing se cambia.
-                            //Lista dei beacon ranged è in "list"
-                        }
-                    }
-                    else {
-                        if (haveNotify) {
-                            showNotification("Uscito", "Uscito dalla regione");
-                            haveNotify = false;
-                        }
-                    }
-                }
-
-
-            });
-            doConnect();
+        /*if (isOnline()) { //Va fatto il check prima altrimenti spamma notifiche
+            //L'app non muore completamente nemmeno dopo system exit, ripartendo il flag è resettato e spamma notifiche
+            connectToManager();
         }
         else{
             Toast.makeText(getApplicationContext(), "Network not online, please enable", Toast.LENGTH_LONG).show();
-            System.exit(0);
-        }
-
-
+            //System.exit(0);
+        }*/
     }
 
+    //Connessione al Manager
+    public void connectToManager(){
+        //Classe BeaconManager per gestire il ranging
+        beaconManager = new BeaconManager(getBaseContext());
+        beaconManager.setRangingListener(new BeaconManager.RangingListener() {
+            @Override
+            public void onBeaconsDiscovered(Region region, List<Beacon> list) {
+                if (!list.isEmpty()) {
+                    //Se ho notificato, ad ogni discovery periodica aggiorno solo il nearestBeacon
+                    Beacon nearestBeacon = list.get(0); //Il primo della lista è il più vicino
+                    if (!haveNotify){ //Se non ho notificato (prima volta/entrata) faccio il procedimento di notifica
+                        //E download del JSON
+                        showNotification("Entrato", "Entrato nella regione");
+                        haveNotify = true;
+                        if(!isOnline()) {
+                            Toast.makeText(getApplicationContext(), "Network not online, please enable", Toast.LENGTH_LONG).show();
+                            System.exit(0);
+                        }
+                        try {
+                            //Retrieving della stringa JSON da url
+                            jsonString = new AsyncJsonGet().execute(stringURL).get();
+                            Log.d("JSONRETRIEVE", "Stringa: " + jsonString);
+                        } catch (Exception e) {
+                            Log.d("JSONTEST", "FAIL! " + jsonString);
+                            Toast.makeText(getApplicationContext(), "Failed to retrieve JSON from URL", Toast.LENGTH_LONG).show();
+                            System.exit(0);
+                            AlertDialog alertDialog = new AlertDialog.Builder(getBaseContext()).create();
+                            alertDialog.setTitle("Warning");
+                            alertDialog.setMessage("Failed to retrieve JSON");
+                            alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                                    new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            dialog.dismiss();
+                                            System.exit(0);
+                                        }
+                                    });
+                            alertDialog.show();
+
+                        }
+                        try {
+                            Log.d("JSONTEST", "Stringa: " + jsonString);
+                            jsonObj = new JSONObject(jsonString);
+                            //addItems();
+                            //Da gestire gli oggetti che passa il JSON
+
+                        } catch (Exception e) {
+                            Log.d("JSONTEST", "FAIL! " + jsonString);
+                            Toast.makeText(getApplicationContext(), "JSON Malformed", Toast.LENGTH_LONG).show();
+                            System.exit(0);
+                            AlertDialog alertDialog = new AlertDialog.Builder(getBaseContext()).create();
+                            alertDialog.setTitle("Warning");
+                            alertDialog.setMessage("JSON Malformed");
+                            alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                                    new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            dialog.dismiss();
+                                            System.exit(0);
+                                        }
+                                    });
+                            alertDialog.show();
+
+                        }
+
+                        //Gestione del beacon più vicino, eventuale message passing se cambia.
+                        //Lista dei beacon ranged è in "list"
+                    }
+                }
+                else { //Se la lista è empty, sono uscito dalla regione. Resetto la notifica
+                    if (haveNotify) {
+                        showNotification("Uscito", "Uscito dalla regione");
+                        haveNotify = false;
+                    }
+                }
+            }
+
+
+        });
+        doConnect(); //Connessione al BeaconManager e start ranging
+    }
+    //Check del network
     public boolean isOnline() {
         ConnectivityManager cm =
                 (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo netInfo = cm.getActiveNetworkInfo();
         return netInfo != null && netInfo.isConnectedOrConnecting();
     }
+    //Notifica all'entrata/uscita di regione
     public void showNotification(String title, String message) {
         notifyIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivities(this, 0,
@@ -215,7 +230,7 @@ public class BeaconApp extends Application {
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.notify(1, notification);
     }
-
+    //Connessione al BeaconManager e inizio del ranging
     public void doConnect(){
         beaconManager.connect(new BeaconManager.ServiceReadyCallback() {
             @Override
@@ -224,6 +239,8 @@ public class BeaconApp extends Application {
             }
         });
     }
+
+    //Classe che prende il JSON in maniera asincrona per non bloccare la baracca
     private class AsyncJsonGet extends AsyncTask<String, Void, String> {
         @Override
         protected String doInBackground(String... params) {

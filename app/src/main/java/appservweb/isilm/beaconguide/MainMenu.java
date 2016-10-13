@@ -4,26 +4,35 @@ import android.Manifest;
 import android.app.AlertDialog;
 import android.app.LauncherActivity;
 import android.bluetooth.BluetoothAdapter;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
 import android.speech.tts.TextToSpeech;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.util.Log;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Locale;
 
 public class MainMenu extends AppCompatActivity implements TextToSpeech.OnInitListener {
@@ -38,18 +47,22 @@ public class MainMenu extends AppCompatActivity implements TextToSpeech.OnInitLi
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
-        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter(); //Adattatore Bluetooth
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setActionBar(toolbar);
-
         Log.d("onCreate", "NewTTS");
         btnDownloadMap = (Button) findViewById(R.id.btnDownloadMap);
         menuListItems = (ListView) findViewById(R.id.lstDownloadedMaps);
+
+        //Check se bluetooth e network sono abilitati.
+        //Attenzione: se l'IF non ha successo, l'app si chiude. Se ha successo inizializziamo il TTS e procediamo
         if(checkNetwork() && checkBluetooth(mBluetoothAdapter)) {
             tts = new TextToSpeech(this, this);
             ListViewSpeaker speaker = new ListViewSpeaker(menuListItems, this, this);
             speaker.initialize();
         }
+
+        //Lista di test
         String[] values = new String[] { "Android List View",
                 "Adapter implementation",
                 "Simple List View In Android",
@@ -60,11 +73,12 @@ public class MainMenu extends AppCompatActivity implements TextToSpeech.OnInitLi
                 "Android Example List View"
         };
 
+        //Adattatore per lista
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_list_item_1, android.R.id.text1, values);
-
         menuListItems.setAdapter(adapter);
 
+        //Check di Permessi su Android SDK per beacons
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (this.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {             final AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 builder.setTitle("This app needs location access");
@@ -79,39 +93,51 @@ public class MainMenu extends AppCompatActivity implements TextToSpeech.OnInitLi
                 builder.show();
             }
         }
+
+        //Broadcast manager di messaggi per message passing da UI a Background thread di ranging
+        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
+                new IntentFilter("custom-event-name"));
     }
 
+    //Classe di Broadcast Receiver con comportamento custom per gestire i messaggi ricevuti
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String message = intent.getStringExtra("message");
+            Log.d("receiver", "Got message: " + message);
+            //Il thread di ranging manda messaggi a seconda degli spostamenti. Riceviamo i messaggi ed agiamo
+            //Qui andrà gestito il messaggio, vengono fatte cose a seconda del beacon più vicino (incluso nel messaggio)
+        }
+    };
+
+    //Setup del Text2Speech
     @Override
     public void onInit(int status) {
-
         Log.d("onInit", "If status tts success");
         if (status == TextToSpeech.SUCCESS) {
             Log.d("onInit", "setLanguage");
             int result = tts.setLanguage(Locale.ITALIAN);
-
             if (result == TextToSpeech.LANG_MISSING_DATA
                     || result == TextToSpeech.LANG_NOT_SUPPORTED) {
                 Log.e("TTS", "This Language is not supported");
-
             } else {
                 //btnSpeak.setEnabled(true);
                 //speakOut();
                 Log.d("Testing", "Inizializzazione corretta");
             }
-
         } else {
             Log.e("TTS", "Initilization Failed!");
         }
-
     }
 
+    //Riempimento del menu opzioni
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.options, menu);
         return true;
     }
 
+    //Check se c'è connessione ad internet, ritorna true/false
     public boolean isOnline() {
         ConnectivityManager cm =
                 (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -119,6 +145,7 @@ public class MainMenu extends AppCompatActivity implements TextToSpeech.OnInitLi
         return netInfo != null && netInfo.isConnectedOrConnecting();
     }
 
+    //Check se il bluetooth è attivo
     public boolean checkBluetooth(BluetoothAdapter mBluetoothAdapter){
         if (!mBluetoothAdapter.isEnabled()){
             AlertDialog alertDialog = new AlertDialog.Builder(MainMenu.this).create();
@@ -140,6 +167,7 @@ public class MainMenu extends AppCompatActivity implements TextToSpeech.OnInitLi
         }
     }
 
+    //Check se la connessione ad internet è presente
     public boolean checkNetwork(){
         if (!isOnline()){
             AlertDialog alertDialog = new AlertDialog.Builder(MainMenu.this).create();
@@ -160,23 +188,5 @@ public class MainMenu extends AppCompatActivity implements TextToSpeech.OnInitLi
             return true;
         }
     }
-
-
-//    @Override
-//        public boolean onOptionsItemSelected(MenuItem item) {
-//        // Handle action bar item clicks here. The action bar will
-//        // automatically handle clicks on the Home/Up button, so long
-//        // as you specify a parent activity in AndroidManifest.xml.
-//        int id = item.getItemId();
-//
-//        //noinspection SimplifiableIfStatement
-//        if (id == R.id.action_settings) {
-//            return true;
-//        }
-//
-//        return super.onOptionsItemSelected(item);
-//    }
-
-
 }
 

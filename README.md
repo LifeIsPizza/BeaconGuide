@@ -14,5 +14,3 @@
 - [ ] Gestione mappe e movimento indicatori (coordinate su immagine di sfondo) (Ele/Massa)
 - [ ] Algoritmi sui due grafi scale/noscale (Gigi/?)
 - [ ] Gestione libreria lettura vocale (default on, disabilitabile da opzioni) (Fant/?)
-
-:new_moon_with_face:

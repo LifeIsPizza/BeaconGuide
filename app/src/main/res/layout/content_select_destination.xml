@@ -1,22 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
     android:weightSum="1">
 
 
     <TextView
         android:text="Dove desideri andare?"
+        style="@style/background"
+        android:padding="10dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/textView"
-        android:layout_weight="0.22"
-        android:textSize="36sp" />
+        android:id="@+id/textView" />
 
     <ListView
         android:layout_width="match_parent"
-        android:layout_height="416dp"
-        android:id="@+id/lstMapPlaces"
-        android:layout_weight="0.47" />
+        android:layout_height="wrap_content"
+        android:divider="@android:color/transparent"
+        android:dividerHeight="10.0sp"
+        android:padding="10dp"
+        android:id="@+id/lstMapPlaces"/>
 
 </LinearLayout>

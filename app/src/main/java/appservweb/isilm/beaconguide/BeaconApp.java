@@ -6,16 +6,20 @@ import android.app.Application;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.speech.tts.TextToSpeech;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+import android.widget.Button;
 import android.widget.Toast;
 
 
@@ -24,6 +28,7 @@ import com.estimote.sdk.BeaconManager;
 import com.estimote.sdk.EstimoteSDK;
 import com.estimote.sdk.Region;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
@@ -77,7 +82,8 @@ public class BeaconApp extends Application {
             public void onActivityStarted(Activity activity) {
                 if (isOnline()) { //Va fatto il check prima altrimenti spamma notifiche
                     //L'app non muore completamente nemmeno dopo system exit, ripartendo il flag è resettato e spamma notifiche
-                    connectToManager();
+                    getLocationsList();
+                    //connectToManager();
                 }
             }
 
@@ -115,6 +121,10 @@ public class BeaconApp extends Application {
 
         //Registrazione delle callback sull'attività
         this.registerActivityLifecycleCallbacks(callbacks);
+        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
+                new IntentFilter("custom-event-name2"));
+
+
         super.onCreate();
         //EstimoteSDK.enableDebugLogging(true);
         /*if (isOnline()) { //Va fatto il check prima altrimenti spamma notifiche
@@ -148,11 +158,11 @@ public class BeaconApp extends Application {
                         try {
                             //Retrieving della stringa JSON da url
                             jsonString = new AsyncJsonGet().execute(stringURL).get();
-                            Log.d("JSONRETRIEVE", "Stringa: " + jsonString);
+                            Log.d("JSONRETRIEVE1", "Stringa: " + jsonString);
                         } catch (Exception e) {
-                            Log.d("JSONTEST", "FAIL! " + jsonString);
+                            Log.d("JSONTEST2", "FAIL! " + jsonString);
                             Toast.makeText(getApplicationContext(), "Failed to retrieve JSON from URL", Toast.LENGTH_LONG).show();
-                            System.exit(0);
+                            //System.exit(0);
                             AlertDialog alertDialog = new AlertDialog.Builder(getBaseContext()).create();
                             alertDialog.setTitle("Warning");
                             alertDialog.setMessage("Failed to retrieve JSON");
@@ -160,33 +170,27 @@ public class BeaconApp extends Application {
                                     new DialogInterface.OnClickListener() {
                                         public void onClick(DialogInterface dialog, int which) {
                                             dialog.dismiss();
-                                            System.exit(0);
+                                            //System.exit(0);
                                         }
                                     });
                             alertDialog.show();
 
                         }
                         try {
-                            Log.d("JSONTEST", "Stringa: " + jsonString);
+                            Log.d("JSONTEST3", "Stringa: " + jsonString);
                             jsonObj = new JSONObject(jsonString);
                             //addItems();
                             //Da gestire gli oggetti che passa il JSON
 
                         } catch (Exception e) {
-                            Log.d("JSONTEST", "FAIL! " + jsonString);
+                            Log.d("JSONTEST4", "FAIL! " + jsonString);
                             Toast.makeText(getApplicationContext(), "JSON Malformed", Toast.LENGTH_LONG).show();
-                            System.exit(0);
-                            AlertDialog alertDialog = new AlertDialog.Builder(getBaseContext()).create();
-                            alertDialog.setTitle("Warning");
-                            alertDialog.setMessage("JSON Malformed");
-                            alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
-                                    new DialogInterface.OnClickListener() {
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            dialog.dismiss();
-                                            System.exit(0);
-                                        }
-                                    });
-                            alertDialog.show();
+                            //System.exit(0);
+
+                            Intent intent = new Intent(Intent.ACTION_MAIN);
+                            intent.addCategory(Intent.CATEGORY_HOME);
+                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            startActivity(intent);
 
                         }
 
@@ -206,6 +210,72 @@ public class BeaconApp extends Application {
         });
         doConnect(); //Connessione al BeaconManager e start ranging
     }
+
+    public void getLocationsList(){
+        try {
+            //Retrieving della stringa JSON da url
+            jsonString = new AsyncJsonGet().execute(stringURL).get();
+            Log.d("JSONLOCATION1", "Stringa: " + jsonString);
+        } catch (Exception e) {
+            Log.d("JSONLOCATION2", "FAIL! " + jsonString);
+            Toast.makeText(getApplicationContext(), "Failed to retrieve JSON from URL", Toast.LENGTH_LONG).show();
+            Intent intent = new Intent(Intent.ACTION_MAIN);
+            intent.addCategory(Intent.CATEGORY_HOME);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+        }
+        try {
+            Log.d("JSONLOCATION3", "Stringa: " + jsonString);
+            jsonObj = new JSONObject(jsonString);
+            JSONArray array = jsonObj.getJSONArray("cities");
+            ArrayList<String> listOfPlaces = new ArrayList<String>();
+            for (int k = 0; k < array.length(); k++) {
+                listOfPlaces.add(k, array.get(k).toString());
+                Log.d("JSONOBJ", "String retrieved:" + array.get(k).toString());
+            }
+            sendMessage(listOfPlaces);
+
+        } catch (Exception e) {
+            Log.d("JSONLOCATION4", "FAIL! " + jsonString);
+            Toast.makeText(getApplicationContext(), "JSON Malformed", Toast.LENGTH_LONG).show();
+            Intent intent = new Intent(Intent.ACTION_MAIN);
+            intent.addCategory(Intent.CATEGORY_HOME);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+
+        }
+    }
+
+    public void getBeaconsList(String location){
+        try {
+            //Retrieving della stringa JSON da url
+            jsonString = new AsyncJsonGet().execute(stringURL+"?city="+location).get();
+            Log.d("JSONBEAC1", "Stringa: " + jsonString);
+        } catch (Exception e) {
+            Log.d("JSONBEAC2", "FAIL! " + jsonString);
+            Toast.makeText(getApplicationContext(), "Failed to retrieve JSON from URL", Toast.LENGTH_LONG).show();
+            Intent intent = new Intent(Intent.ACTION_MAIN);
+            intent.addCategory(Intent.CATEGORY_HOME);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+        }
+        try {
+            Log.d("JSONBEAC3", "Stringa: " + jsonString);
+            jsonObj = new JSONObject(jsonString);
+            //TODO dare una forma alla lista beacon e mandarli da qualche parte per essere visualizzati
+
+        } catch (Exception e) {
+            Log.d("JSONBEAC4", "FAIL! " + jsonString);
+            Toast.makeText(getApplicationContext(), "JSON Malformed", Toast.LENGTH_LONG).show();
+            Intent intent = new Intent(Intent.ACTION_MAIN);
+            intent.addCategory(Intent.CATEGORY_HOME);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+
+        }
+    }
+
+
     //Check del network
     public boolean isOnline() {
         ConnectivityManager cm =
@@ -289,6 +359,37 @@ public class BeaconApp extends Application {
             jsonString = result;
         }
 
-
     }
+
+    private void sendMessage(ArrayList<String> places) {
+        Intent intent = new Intent("custom-event-name");
+        if (places.isEmpty()){
+            intent.putExtra("places", places);
+            intent.putExtra("message", "Empty places, no maps");
+            LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+        } else {
+            intent.putExtra("places", places);
+            intent.putExtra("message", "Some maps found: " + places.size());
+            Log.d("Places0", places.get(0).toString());
+            Log.d("Places1", places.get(1).toString());
+            LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+        }
+    }
+
+
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String message = intent.getStringExtra("message");
+            String location = intent.getStringExtra("MainMenuClicked");
+            Log.d("receiver", "Got message: " + message);
+            Log.d("receiver", "Getting maps for " + location);
+            //TODO #2 trovare le mappe per il beacon e spammarle, getBeaconsList(location)
+
+            //ArrayList<String> values = (ArrayList<String>) intent.getSerializableExtra("DownloadMapPress");
+            //Download mappe asincrono
+            //values.add("Ayy Lmao Works");
+
+        }
+    };
 }

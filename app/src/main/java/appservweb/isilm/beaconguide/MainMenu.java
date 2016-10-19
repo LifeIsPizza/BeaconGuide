@@ -31,6 +31,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.util.Log;
 
+import com.estimote.sdk.*;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Locale;
@@ -38,10 +40,10 @@ import java.util.Locale;
 public class MainMenu extends AppCompatActivity implements TextToSpeech.OnInitListener {
 
     //Variables
-    private TextToSpeech tts;
-    private Button btnDownloadMap;
     private ListView menuListItems;
-
+    private ListViewSpeaker speaker;
+    private ArrayList<String> values;
+    private ArrayAdapter<String> adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,31 +52,38 @@ public class MainMenu extends AppCompatActivity implements TextToSpeech.OnInitLi
         BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter(); //Adattatore Bluetooth
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setActionBar(toolbar);
-        Log.d("onCreate", "NewTTS");
-        btnDownloadMap = (Button) findViewById(R.id.btnDownloadMap);
         menuListItems = (ListView) findViewById(R.id.lstDownloadedMaps);
 
         //Check se bluetooth e network sono abilitati.
         //Attenzione: se l'IF non ha successo, l'app si chiude. Se ha successo inizializziamo il TTS e procediamo
         if(checkNetwork() && checkBluetooth(mBluetoothAdapter)) {
-            tts = new TextToSpeech(this, this);
-            ListViewSpeaker speaker = new ListViewSpeaker(menuListItems, this, this);
-            speaker.initialize();
+            speaker = new ListViewSpeaker(this, this);
+            menuListItems.setLongClickable(true);
+            menuListItems.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    Object listItem = menuListItems.getItemAtPosition(position);
+                    speaker.speakItem(listItem.toString());
+                }
+            });
+            menuListItems.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener(){
+                @Override
+                public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                    Log.v("main long clicked","pos: " + position);
+                    Object listItem = menuListItems.getItemAtPosition(position);
+                    speaker.speakItem(listItem.toString());
+                    sendMessage(position);
+                    return true;
+                }
+
+            });
         }
 
         //Lista di test
-        String[] values = new String[] { "Android List View",
-                "Adapter implementation",
-                "Simple List View In Android",
-                "Create List View Android",
-                "Android Example",
-                "List View Source Code",
-                "List View Array Adapter",
-                "Android Example List View"
-        };
+        values = new ArrayList<String>();
 
         //Adattatore per lista
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
+        adapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_list_item_1, android.R.id.text1, values);
         menuListItems.setAdapter(adapter);
 
@@ -99,12 +108,29 @@ public class MainMenu extends AppCompatActivity implements TextToSpeech.OnInitLi
                 new IntentFilter("custom-event-name"));
     }
 
+    private void sendMessage(int id) {
+        Intent intent = new Intent("custom-event-name2");
+        String selected = values.get(id);
+        Log.d("SendMessageMainMenu", selected);
+        intent.putExtra("MainMenuClicked", selected);
+        intent.putExtra("message", "MessageMainMenuDescr");
+        LocalBroadcastManager.getInstance(this).sendBroadcastSync(intent);
+    }
+
     //Classe di Broadcast Receiver con comportamento custom per gestire i messaggi ricevuti
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             String message = intent.getStringExtra("message");
             Log.d("receiver", "Got message: " + message);
+            ArrayList<String> places;
+            places = (ArrayList<String>) intent.getSerializableExtra("places");
+            values.clear();
+            for (int k = 0; k < places.size(); k++)
+            {
+                values.add(k, places.get(k));
+            }
+            adapter.notifyDataSetChanged();
             //Il thread di ranging manda messaggi a seconda degli spostamenti. Riceviamo i messaggi ed agiamo
             //Qui andrà gestito il messaggio, vengono fatte cose a seconda del beacon più vicino (incluso nel messaggio)
         }
@@ -113,21 +139,8 @@ public class MainMenu extends AppCompatActivity implements TextToSpeech.OnInitLi
     //Setup del Text2Speech
     @Override
     public void onInit(int status) {
-        Log.d("onInit", "If status tts success");
-        if (status == TextToSpeech.SUCCESS) {
-            Log.d("onInit", "setLanguage");
-            int result = tts.setLanguage(Locale.ITALIAN);
-            if (result == TextToSpeech.LANG_MISSING_DATA
-                    || result == TextToSpeech.LANG_NOT_SUPPORTED) {
-                Log.e("TTS", "This Language is not supported");
-            } else {
-                //btnSpeak.setEnabled(true);
-                //speakOut();
-                Log.d("Testing", "Inizializzazione corretta");
-            }
-        } else {
-            Log.e("TTS", "Initilization Failed!");
-        }
+        Log.d("onInit", "MainMenu");
+        speaker.onInit(status);
     }
 
     //Riempimento del menu opzioni
@@ -187,6 +200,14 @@ public class MainMenu extends AppCompatActivity implements TextToSpeech.OnInitLi
         else{
             return true;
         }
+    }
+
+
+
+    public void downloadMaps(){
+        sendMessage(0);
+        menuListItems.setAdapter(adapter);
+        Log.d("Debug", "Downloaded Maps");
     }
 }
 

@@ -5,22 +5,29 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context="appservweb.isilm.beaconguide.MainActivity">
+    android:background="@color/myLightGrey"
+    tools:context=".SelectionClass">
 
-
-    <android.widget.Toolbar
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?attr/colorPrimary"
-        android:theme="?attr/actionBarTheme"
-        android:minHeight="?attr/actionBarSize"
-        android:id="@+id/toolbar"
-        app:title="@string/app_name"
-        />
+        android:layout_height="match_parent">
+
+        <android.widget.Toolbar
+            style="@style/customToolBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="?attr/actionBarSize"
+            android:id="@+id/myToolbar"
+            android:title="@string/app_name"
+            />
 
 
-    <include layout="@layout/content_select_destination" />
+        <include layout="@layout/content_select_destination"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/myToolbar"/>
 
+    </RelativeLayout>
 
 </android.support.design.widget.CoordinatorLayout>
 

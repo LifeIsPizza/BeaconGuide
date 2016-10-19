@@ -1,30 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="wrap_content"
+    android:layout_width="match_parent"
+    android:layout_height="59dp"
     android:orientation="horizontal"
-    android:padding="5dp" >
+	style="@style/background"
+	>
 
-	<LinearLayout
-	    android:layout_width="wrap_content"
-	    android:layout_height="55dp"
-	    android:orientation="horizontal"
-	    android:layout_weight="1.04">
-		<ImageView
-			android:id="@+id/online_icon"
-			android:layout_width="40dp"
-			android:layout_height="40dp"
-			android:src="@mipmap/logo"/>
+	<ImageView
+        android:id="@+id/online_icon"
+        android:layout_width="55dp"
+        android:layout_height="55dp"
+        android:src="@mipmap/logo"
+		android:layout_margin="2dp"/>
 
-		<TextView
-            android:id="@+id/txtPlaceName"
-            android:layout_width="@dimen/fab_margin"
-            android:layout_height="match_parent"
-            android:textColor="@color/colorPrimaryDark"
-            android:text="Informatica Cesena"
-            android:textAppearance="?android:attr/textAppearanceSearchResultSubtitle"
-            android:layout_weight="0.22"
-			android:textSize="24sp" />
-	</LinearLayout>
+	<TextView
+		android:id="@+id/txtPlaceName"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:text="Università di Cesena"
+		style="@style/textStyle"/>
 
 </LinearLayout>

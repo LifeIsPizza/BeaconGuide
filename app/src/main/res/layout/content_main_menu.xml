@@ -10,9 +10,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/lstDownloadedMaps"
-        android:layout_weight="0.98" />
+        android:layout_weight="0.98"
+        android:divider="@android:color/transparent"
+        android:dividerHeight="10.0sp"
+        android:padding="10dp"/>
 
     <Button
+        style="@style/customButton"
         android:text="@string/downloadMapsButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

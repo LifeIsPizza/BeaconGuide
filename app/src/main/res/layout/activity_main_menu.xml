@@ -5,8 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-
-    tools:context="appservweb.isilm.beaconguide.MainMenu">
+    android:background="@color/myLightGrey"
+    tools:context=".MainMenu">
 
 
     <RelativeLayout
@@ -15,12 +15,11 @@
 
 
     <android.widget.Toolbar
+        style="@style/customToolBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?attr/colorPrimary"
-        android:theme="?attr/actionBarTheme"
         android:minHeight="?attr/actionBarSize"
-        android:id="@+id/toolbar"
+        android:id="@+id/myToolbar"
         android:title="@string/app_name"
         />
 
@@ -31,7 +30,7 @@
             android:id="@+id/content_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/toolbar"/>
+            android:layout_below="@id/myToolbar"/>
 
     </RelativeLayout>
 

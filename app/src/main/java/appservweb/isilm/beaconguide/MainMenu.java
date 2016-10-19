@@ -50,7 +50,7 @@ public class MainMenu extends AppCompatActivity implements TextToSpeech.OnInitLi
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
         BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter(); //Adattatore Bluetooth
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.myToolbar);
         setActionBar(toolbar);
         menuListItems = (ListView) findViewById(R.id.lstDownloadedMaps);
 

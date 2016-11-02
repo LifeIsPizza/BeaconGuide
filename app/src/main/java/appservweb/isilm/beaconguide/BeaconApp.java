@@ -54,6 +54,12 @@ import java.util.UUID;
 
 public class BeaconApp extends Application {
 
+    private static final String TAG_OBJECTS = "Beacon";
+    private static final String TAG_NOME = "id";
+    private static final String TAG_ZONA = "zona";
+    private static final String TAG_VICINI = "vicini";
+    private static final String TAG_DIS = "viciniHandicap";
+
     private Intent notifyIntent;
     private BeaconManager beaconManager = null;
     private NotificationManager notificationManager;
@@ -64,8 +70,9 @@ public class BeaconApp extends Application {
     private boolean haveNotify = false;
     private static String jsonString = "";
     private static JSONObject jsonObj = null;
-
-
+    private static String jsonStringMaps = "";
+    private static JSONObject jsonObjMaps = null;
+    private static ArrayList<appservweb.isilm.beaconguide.Beacon> PLACES_BY_BEACONS;
 
     @Override
     public void onCreate() {
@@ -383,7 +390,10 @@ public class BeaconApp extends Application {
             String message = intent.getStringExtra("message");
             String location = intent.getStringExtra("MainMenuClicked");
             Log.d("receiver", "Got message: " + message);
-            Log.d("receiver", "Getting maps for " + location);
+            Log.d("receiver", "Getting locations for " + location);
+            getLocs(location);
+            setBeacons(jsonObjMaps);
+
             //TODO #2 trovare le mappe per il beacon e spammarle, getBeaconsList(location)
 
             //ArrayList<String> values = (ArrayList<String>) intent.getSerializableExtra("DownloadMapPress");
@@ -392,4 +402,65 @@ public class BeaconApp extends Application {
 
         }
     };
+
+    private void getLocs(String location){
+        try {
+            //Retrieving della stringa JSON da url
+            jsonStringMaps = new AsyncJsonGet().execute(stringURL+"?city="+location).get();
+            Log.d("GetMapsJson1", "Stringa: " + jsonStringMaps);
+        } catch (Exception e) {
+            Log.d("GetMapsJson2", "FAIL! " + jsonStringMaps);
+            Toast.makeText(getApplicationContext(), "Failed to retrieve JSON from URL", Toast.LENGTH_LONG).show();
+            //System.exit(0);
+            AlertDialog alertDialog = new AlertDialog.Builder(getBaseContext()).create();
+            alertDialog.setTitle("Warning");
+            alertDialog.setMessage("Failed to retrieve JSON");
+            alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                            //System.exit(0);
+                        }
+                    });
+            alertDialog.show();
+
+        }
+        try {
+            Log.d("GetMapsJson3", "Stringa: " + jsonStringMaps);
+            jsonObjMaps = new JSONObject(jsonStringMaps);
+
+        } catch (Exception e) {
+            Log.d("GetMapsJson4", "FAIL! " + jsonStringMaps);
+            Toast.makeText(getApplicationContext(), "JSON Malformed", Toast.LENGTH_LONG).show();
+            //System.exit(0);
+
+            Intent intent = new Intent(Intent.ACTION_MAIN);
+            intent.addCategory(Intent.CATEGORY_HOME);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+
+        }
+    }
+
+    private void setBeacons(JSONObject object){
+
+        PLACES_BY_BEACONS = new ArrayList<appservweb.isilm.beaconguide.Beacon>() {{
+            try{
+                Log.d("NumObjects", String.valueOf(jsonObjMaps.getJSONObject(TAG_OBJECTS).length()));
+                Log.d("k1-id", jsonObjMaps.getJSONObject(TAG_OBJECTS).getJSONObject(Integer.toString(1)).get(TAG_NOME).toString());
+                Log.d("k1-zona", jsonObjMaps.getJSONObject(TAG_OBJECTS).getJSONObject(Integer.toString(1)).get(TAG_ZONA).toString());
+                for(int k = 1; k <= jsonObjMaps.getJSONObject(TAG_OBJECTS).length(); k++){
+                    add(new appservweb.isilm.beaconguide.Beacon(
+                            Integer.parseInt(jsonObjMaps.getJSONObject(TAG_OBJECTS).getJSONObject(Integer.toString(k)).get(TAG_NOME).toString()),
+                            jsonObjMaps.getJSONObject(TAG_OBJECTS).getJSONObject(Integer.toString(k)).get(TAG_ZONA).toString(),
+                            jsonObjMaps.getJSONObject(TAG_OBJECTS).getJSONObject(Integer.toString(k)).getJSONArray(TAG_VICINI),
+                            jsonObjMaps.getJSONObject(TAG_OBJECTS).getJSONObject(Integer.toString(k)).getJSONArray(TAG_DIS)
+                    ));
+                    //TODO: debug, problema se una delle due liste di vicini è vuota
+                }
+            }catch (Exception e) {
+                Log.d("Failayy", "Fail111");
+            }
+        }};
+    }
 }

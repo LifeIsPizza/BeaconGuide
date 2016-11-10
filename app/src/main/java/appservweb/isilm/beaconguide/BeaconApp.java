@@ -90,26 +90,37 @@ public class BeaconApp extends Application {
                 if (isOnline()) { //Va fatto il check prima altrimenti spamma notifiche
                     //L'app non muore completamente nemmeno dopo system exit, ripartendo il flag è resettato e spamma notifiche
                     getLocationsList();
-                    //connectToManager();
+                    ////connectToManager(); //Non decommentare questo, decommenta quello in resume
                 }
             }
 
             @Override
             public void onActivityResumed(Activity activity) {
-                //Fai cose ad attività ripresa
+                if (isOnline()) { //Va fatto il check prima altrimenti spamma notifiche
+                    //L'app non muore completamente nemmeno dopo system exit, ripartendo il flag è resettato e spamma notifiche
+                    //connectToManager();
+                }
+                Log.d("BeaconApp", "Resuming");
             }
 
             @Override
             public void onActivityPaused(Activity activity) {
                 //Fai cose ad attività pausata
-            }
-
-            @Override
-            public void onActivityStopped(Activity activity) {
                 if(beaconManager!=null) {
                     beaconManager.disconnect();
                     beaconManager = null;
                 }
+                Log.d("BeaconApp", "Pausing");
+            }
+
+            @Override
+            public void onActivityStopped(Activity activity) {
+                /*
+                if(beaconManager!=null) {
+                    beaconManager.disconnect();
+                    beaconManager = null;
+                }
+                */
                 Log.d("BeaconApp", "Stopping");
             }
 
@@ -154,6 +165,7 @@ public class BeaconApp extends Application {
                 if (!list.isEmpty()) {
                     //Se ho notificato, ad ogni discovery periodica aggiorno solo il nearestBeacon
                     Beacon nearestBeacon = list.get(0); //Il primo della lista è il più vicino
+                    //Log.d("Nearest","Beacon: " + Integer.toString(nearestBeacon.getMajor()));
                     if (!haveNotify){ //Se non ho notificato (prima volta/entrata) faccio il procedimento di notifica
                         //E download del JSON
                         showNotification("Entrato", "Entrato nella regione");
@@ -253,7 +265,7 @@ public class BeaconApp extends Application {
         }
     }
 
-    public void getBeaconsList(String location){
+    public void getBeaconsListtest(String location){
         try {
             //Retrieving della stringa JSON da url
             jsonString = new AsyncJsonGet().execute(stringURL+"?city="+location).get();
@@ -391,10 +403,10 @@ public class BeaconApp extends Application {
             String location = intent.getStringExtra("MainMenuClicked");
             Log.d("receiver", "Got message: " + message);
             Log.d("receiver", "Getting locations for " + location);
-            getLocs(location);
+            getBeaconsList(location);
             setBeacons(jsonObjMaps);
 
-            //TODO #2 trovare le mappe per il beacon e spammarle, getBeaconsList(location)
+            //TODO #2 questa è l'azione su selezione città da UI. dopo setbeacons, cambiare activity
 
             //ArrayList<String> values = (ArrayList<String>) intent.getSerializableExtra("DownloadMapPress");
             //Download mappe asincrono
@@ -403,7 +415,7 @@ public class BeaconApp extends Application {
         }
     };
 
-    private void getLocs(String location){
+    private void getBeaconsList(String location){
         try {
             //Retrieving della stringa JSON da url
             jsonStringMaps = new AsyncJsonGet().execute(stringURL+"?city="+location).get();
@@ -446,17 +458,17 @@ public class BeaconApp extends Application {
 
         PLACES_BY_BEACONS = new ArrayList<appservweb.isilm.beaconguide.Beacon>() {{
             try{
-                Log.d("NumObjects", String.valueOf(jsonObjMaps.getJSONObject(TAG_OBJECTS).length()));
-                Log.d("k1-id", jsonObjMaps.getJSONObject(TAG_OBJECTS).getJSONObject(Integer.toString(1)).get(TAG_NOME).toString());
-                Log.d("k1-zona", jsonObjMaps.getJSONObject(TAG_OBJECTS).getJSONObject(Integer.toString(1)).get(TAG_ZONA).toString());
-                for(int k = 1; k <= jsonObjMaps.getJSONObject(TAG_OBJECTS).length(); k++){
+                Log.d("NumObjects", String.valueOf(jsonObjMaps.getJSONArray(TAG_OBJECTS).length()));
+                Log.d("k1-id", jsonObjMaps.getJSONArray(TAG_OBJECTS).getJSONObject(1).get(TAG_NOME).toString());
+                Log.d("k1-zona", jsonObjMaps.getJSONArray(TAG_OBJECTS).getJSONObject(1).get(TAG_ZONA).toString());
+                for(int k = 0; k < jsonObjMaps.getJSONArray(TAG_OBJECTS).length(); k++){
+                    Log.d("ForLog","Iteration: " + Integer.toString(k));
                     add(new appservweb.isilm.beaconguide.Beacon(
-                            Integer.parseInt(jsonObjMaps.getJSONObject(TAG_OBJECTS).getJSONObject(Integer.toString(k)).get(TAG_NOME).toString()),
-                            jsonObjMaps.getJSONObject(TAG_OBJECTS).getJSONObject(Integer.toString(k)).get(TAG_ZONA).toString(),
-                            jsonObjMaps.getJSONObject(TAG_OBJECTS).getJSONObject(Integer.toString(k)).getJSONArray(TAG_VICINI),
-                            jsonObjMaps.getJSONObject(TAG_OBJECTS).getJSONObject(Integer.toString(k)).getJSONArray(TAG_DIS)
+                            Integer.parseInt(jsonObjMaps.getJSONArray(TAG_OBJECTS).getJSONObject(k).get(TAG_NOME).toString()),
+                            jsonObjMaps.getJSONArray(TAG_OBJECTS).getJSONObject(k).get(TAG_ZONA).toString(),
+                            jsonObjMaps.getJSONArray(TAG_OBJECTS).getJSONObject(k).getJSONArray(TAG_VICINI),
+                            jsonObjMaps.getJSONArray(TAG_OBJECTS).getJSONObject(k).getJSONArray(TAG_DIS)
                     ));
-                    //TODO: debug, problema se una delle due liste di vicini è vuota
                 }
             }catch (Exception e) {
                 Log.d("Failayy", "Fail111");

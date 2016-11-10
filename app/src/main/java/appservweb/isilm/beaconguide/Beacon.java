@@ -31,8 +31,8 @@ public class Beacon {
         if(vicini != null) {
             try {
                 Log.d("VicLeng", String.valueOf(vicini.length()));
-                Log.d("VicLeng", String.valueOf(vicini.getJSONObject(0).getInt("gradi")));
                 for (int k = 0; k < vicini.length(); k++) {
+                    Log.d("VicLeng", String.valueOf(vicini.getJSONObject(k).getInt("gradi")));
                     this.vicini.add(new Nearby(
                             vicini.getJSONObject(k).getInt("beacon_arrivo"),
                             vicini.getJSONObject(k).getInt("gradi"),
@@ -46,8 +46,10 @@ public class Beacon {
         this.vic_dis = new ArrayList<Nearby>();
         //TODO: debug, problema se una delle due liste di vicini è vuota
         if (vic_dis != null) {
+            Log.d("DisLeng", String.valueOf(vic_dis.length()));
             try {
                 for (int k = 0; k < vic_dis.length(); k++) {
+                    Log.d("DisLeng", String.valueOf(vic_dis.getJSONObject(k).getInt("gradi")));
                     this.vic_dis.add(new Nearby(
                             vic_dis.getJSONObject(k).getInt("beacon_arrivo"),
                             vic_dis.getJSONObject(k).getInt("gradi"),

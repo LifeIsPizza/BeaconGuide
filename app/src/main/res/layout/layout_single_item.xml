@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="59dp"
+    android:orientation="horizontal"
+	style="@style/background"
+	>
+
+	<ImageView
+        android:id="@+id/online_icon"
+        android:layout_width="55dp"
+        android:layout_height="55dp"
+        android:src="@mipmap/logo"
+		android:layout_margin="2dp"/>
+
+	<TextView
+		android:id="@+id/txtPlaceName"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:text="Università di Cesena"
+		style="@style/textStyle"/>
+
+</LinearLayout>

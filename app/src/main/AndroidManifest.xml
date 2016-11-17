@@ -28,7 +28,8 @@
         </activity>
         <activity
             android:name=".BeaconsMenu"
-            android:theme="@style/AppTheme.NoActionBar"/>
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name=".MapActivity"></activity>
     </application>
 
 </manifest>

@@ -99,7 +99,8 @@ public class BeaconApp extends Application {
             public void onActivityResumed(Activity activity) {
                 if (isOnline()) { //Va fatto il check prima altrimenti spamma notifiche
                     //L'app non muore completamente nemmeno dopo system exit, ripartendo il flag è resettato e spamma notifiche
-                    //connectToManager();
+                    //#TODO 1 decommenta il connectToManager
+                    //connectToManager(); //Decommenta questo! Ma solo quando devi provare il ranging di beacon
                 }
                 Log.d("BeaconApp", "Resuming");
             }
@@ -166,57 +167,18 @@ public class BeaconApp extends Application {
                 if (!list.isEmpty()) {
                     //Se ho notificato, ad ogni discovery periodica aggiorno solo il nearestBeacon
                     Beacon nearestBeacon = list.get(0); //Il primo della lista è il più vicino
-                    //Log.d("Nearest","Beacon: " + Integer.toString(nearestBeacon.getMajor()));
+                    Log.d("Nearest","Beacon: " + Integer.toString(nearestBeacon.getMajor()));
+                    //Decommenta il connectToManager in onresume
                     if (!haveNotify){ //Se non ho notificato (prima volta/entrata) faccio il procedimento di notifica
                         //E download del JSON
                         showNotification("Entrato", "Entrato nella regione");
                         haveNotify = true;
-                        if(!isOnline()) {
-                            Toast.makeText(getApplicationContext(), "Network not online, please enable", Toast.LENGTH_LONG).show();
-                            System.exit(0);
-                        }
-                        try {
-                            //Retrieving della stringa JSON da url
-                            jsonString = new AsyncJsonGet().execute(stringURL).get();
-                            Log.d("JSONRETRIEVE1", "Stringa: " + jsonString);
-                        } catch (Exception e) {
-                            Log.d("JSONTEST2", "FAIL! " + jsonString);
-                            Toast.makeText(getApplicationContext(), "Failed to retrieve JSON from URL", Toast.LENGTH_LONG).show();
-                            //System.exit(0);
-                            AlertDialog alertDialog = new AlertDialog.Builder(getBaseContext()).create();
-                            alertDialog.setTitle("Warning");
-                            alertDialog.setMessage("Failed to retrieve JSON");
-                            alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
-                                    new DialogInterface.OnClickListener() {
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            dialog.dismiss();
-                                            //System.exit(0);
-                                        }
-                                    });
-                            alertDialog.show();
-
-                        }
-                        try {
-                            Log.d("JSONTEST3", "Stringa: " + jsonString);
-                            jsonObj = new JSONObject(jsonString);
-                            //addItems();
-                            //Da gestire gli oggetti che passa il JSON
-
-                        } catch (Exception e) {
-                            Log.d("JSONTEST4", "FAIL! " + jsonString);
-                            Toast.makeText(getApplicationContext(), "JSON Malformed", Toast.LENGTH_LONG).show();
-                            //System.exit(0);
-
-                            Intent intent = new Intent(Intent.ACTION_MAIN);
-                            intent.addCategory(Intent.CATEGORY_HOME);
-                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                            startActivity(intent);
-
-                        }
-
-                        //Gestione del beacon più vicino, eventuale message passing se cambia.
-                        //Lista dei beacon ranged è in "list"
                     }
+
+                    //#TODO 2: gestire il nearestBeacon e creare un Beacon "precedente" per checkare se è sempre lo stesso
+                    // In caso contrario, ci siamo spostati (il più vicino non è lo stesso più vicino di 2 secondi fa
+                    // Aggiornare UI
+
                 }
                 else { //Se la lista è empty, sono uscito dalla regione. Resetto la notifica
                     if (haveNotify) {
@@ -282,7 +244,6 @@ public class BeaconApp extends Application {
         try {
             Log.d("JSONBEAC3", "Stringa: " + jsonString);
             jsonObj = new JSONObject(jsonString);
-            //TODO dare una forma alla lista beacon e mandarli da qualche parte per essere visualizzati
 
         } catch (Exception e) {
             Log.d("JSONBEAC4", "FAIL! " + jsonString);
@@ -424,8 +385,6 @@ public class BeaconApp extends Application {
             getBeaconsList(location);
             setBeacons(jsonObjMaps);
             sendBeacons(ALL_BEACONS);
-
-            //TODO #2 questa è l'azione su selezione città da UI. dopo setbeacons, cambiare activity
 
             //ArrayList<String> values = (ArrayList<String>) intent.getSerializableExtra("DownloadMapPress");
             //Download mappe asincrono

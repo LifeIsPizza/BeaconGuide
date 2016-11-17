@@ -23,6 +23,7 @@ public class BeaconsMenu extends AppCompatActivity implements TextToSpeech.OnIni
     private ListViewSpeaker speaker;
     private ArrayList<String> values;
     private ArrayAdapter<String> adapter;
+    private ArrayList<Beacon> beacons;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,6 +32,14 @@ public class BeaconsMenu extends AppCompatActivity implements TextToSpeech.OnIni
         Toolbar toolbar = (Toolbar) findViewById(R.id.myToolbar);
         setActionBar(toolbar);
         menuListItems = (ListView) findViewById(R.id.lstBeacons);
+
+        //Lista di test
+        values = new ArrayList<String>();
+        Intent intent = getIntent();
+        beacons = (ArrayList<Beacon>) intent.getSerializableExtra("beacons");
+        for (int k = 0; k < beacons.size(); k++ ){
+            values.add(beacons.get(k).getZona());
+        }
 
         speaker = new ListViewSpeaker(this, this);
         menuListItems.setLongClickable(true);
@@ -47,18 +56,12 @@ public class BeaconsMenu extends AppCompatActivity implements TextToSpeech.OnIni
                 Log.v("main long clicked","pos: " + position);
                 Object listItem = menuListItems.getItemAtPosition(position);
                 speaker.speakItem(listItem.toString());
+                changeAct(beacons);
                 return true;
             }
 
         });
 
-        //Lista di test
-        values = new ArrayList<String>();
-        Intent intent = getIntent();
-        ArrayList<Beacon> beacons = (ArrayList<Beacon>) intent.getSerializableExtra("beacons");
-        for (int k = 0; k < beacons.size(); k++ ){
-            values.add(beacons.get(k).getZona());
-        }
 
         //Adattatore per lista
         adapter = new ArrayAdapter<String>(this,
@@ -79,6 +82,12 @@ public class BeaconsMenu extends AppCompatActivity implements TextToSpeech.OnIni
 
         }
     };
+
+    private void changeAct(ArrayList<Beacon> beacons){
+//        Intent changeActivity = new Intent(this, MapActivity.class);
+//        changeActivity.putExtra("beacons", beacons);
+//        startActivity(changeActivity);
+    }
 
     public void onInit(int status) {
         Log.d("onInit", "MainMenu");

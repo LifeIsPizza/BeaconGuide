@@ -84,9 +84,9 @@ public class BeaconsMenu extends AppCompatActivity implements TextToSpeech.OnIni
     };
 
     private void changeAct(ArrayList<Beacon> beacons){
-//        Intent changeActivity = new Intent(this, MapActivity.class);
-//        changeActivity.putExtra("beacons", beacons);
-//        startActivity(changeActivity);
+        Intent changeActivity = new Intent(this, MapActivity.class);
+        changeActivity.putExtra("beacons", beacons);
+        startActivity(changeActivity);
     }
 
     public void onInit(int status) {

@@ -1,11 +1,14 @@
 package appservweb.isilm.beaconguide;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.speech.tts.TextToSpeech;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 
@@ -13,7 +16,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class MapActivity extends AppCompatActivity {
+public class MapActivity extends AppCompatActivity implements TextToSpeech.OnInitListener {
+
+    private ListViewSpeaker speaker;
+    private ArrayList<Beacon> beacons;
 
     List<BeaconArea> listBeaconArea;
     ImageView mapView;
@@ -40,7 +46,18 @@ public class MapActivity extends AppCompatActivity {
             }
         });
 
+        Intent intent = getIntent();
+        beacons = (ArrayList<Beacon>) intent.getSerializableExtra("beacons");
 
+
+    }
+
+    @Override
+    public void onBackPressed() {
+        Log.d("CDA", "onBackPressed Called");
+        Intent changeActivity = new Intent(this, BeaconsMenu.class);
+        changeActivity.putExtra("beacons", beacons);
+        startActivity(changeActivity);
     }
 
     void drawMethod(){
@@ -75,5 +92,16 @@ public class MapActivity extends AppCompatActivity {
         drawView.setAlpha((float) 0.7);
         drawView.setImageBitmap(bmp);
 
+    }
+
+
+    public void onInit(int status) {
+        Log.d("onInit", "MainMenu");
+        speaker.onInit(status);
+    }
+
+    protected void onDestroy() {
+        speaker.destroy();
+        super.onDestroy();
     }
 }

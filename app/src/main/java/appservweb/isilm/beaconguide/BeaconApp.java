@@ -57,6 +57,7 @@ public class BeaconApp extends Application {
     private static final String TAG_OBJECTS = "Beacon";
     private static final String TAG_NOME = "id";
     private static final String TAG_ZONA = "zona";
+    private static final String TAG_MAPID = "map_id";
     private static final String TAG_VICINI = "vicini";
     private static final String TAG_DIS = "viciniHandicap";
 
@@ -72,7 +73,7 @@ public class BeaconApp extends Application {
     private static JSONObject jsonObj = null;
     private static String jsonStringMaps = "";
     private static JSONObject jsonObjMaps = null;
-    private static ArrayList<appservweb.isilm.beaconguide.Beacon> PLACES_BY_BEACONS;
+    private static ArrayList<appservweb.isilm.beaconguide.Beacon> ALL_BEACONS;
 
     @Override
     public void onCreate() {
@@ -246,13 +247,13 @@ public class BeaconApp extends Application {
         try {
             Log.d("JSONLOCATION3", "Stringa: " + jsonString);
             jsonObj = new JSONObject(jsonString);
-            JSONArray array = jsonObj.getJSONArray("cities");
+            JSONArray array = jsonObj.getJSONArray("maps");
             ArrayList<String> listOfPlaces = new ArrayList<String>();
             for (int k = 0; k < array.length(); k++) {
                 listOfPlaces.add(k, array.get(k).toString());
                 Log.d("JSONOBJ", "String retrieved:" + array.get(k).toString());
             }
-            sendMessage(listOfPlaces);
+            sendPlaces(listOfPlaces);
 
         } catch (Exception e) {
             Log.d("JSONLOCATION4", "FAIL! " + jsonString);
@@ -268,7 +269,7 @@ public class BeaconApp extends Application {
     public void getBeaconsListtest(String location){
         try {
             //Retrieving della stringa JSON da url
-            jsonString = new AsyncJsonGet().execute(stringURL+"?city="+location).get();
+            jsonString = new AsyncJsonGet().execute(stringURL+"?map="+location).get();
             Log.d("JSONBEAC1", "Stringa: " + jsonString);
         } catch (Exception e) {
             Log.d("JSONBEAC2", "FAIL! " + jsonString);
@@ -380,17 +381,34 @@ public class BeaconApp extends Application {
 
     }
 
-    private void sendMessage(ArrayList<String> places) {
+    private void sendPlaces(ArrayList<String> places) {
         Intent intent = new Intent("custom-event-name");
         if (places.isEmpty()){
+            intent.putExtra("id", 1);
             intent.putExtra("places", places);
             intent.putExtra("message", "Empty places, no maps");
             LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
         } else {
+            intent.putExtra("id", 1);
             intent.putExtra("places", places);
             intent.putExtra("message", "Some maps found: " + places.size());
             Log.d("Places0", places.get(0).toString());
             Log.d("Places1", places.get(1).toString());
+            LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+        }
+    }
+
+    private void sendBeacons (ArrayList<appservweb.isilm.beaconguide.Beacon> beacons){
+        Intent intent = new Intent("custom-event-name");
+        if (beacons.isEmpty()){
+            intent.putExtra("id", 2);
+            intent.putExtra("beacons", beacons);
+            intent.putExtra("message", "Empty beacons");
+            LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+        } else {
+            intent.putExtra("id", 2);
+            intent.putExtra("beacons", beacons);
+            intent.putExtra("message", "Some maps found: " + beacons.size());
             LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
         }
     }
@@ -405,6 +423,7 @@ public class BeaconApp extends Application {
             Log.d("receiver", "Getting locations for " + location);
             getBeaconsList(location);
             setBeacons(jsonObjMaps);
+            sendBeacons(ALL_BEACONS);
 
             //TODO #2 questa è l'azione su selezione città da UI. dopo setbeacons, cambiare activity
 
@@ -418,7 +437,7 @@ public class BeaconApp extends Application {
     private void getBeaconsList(String location){
         try {
             //Retrieving della stringa JSON da url
-            jsonStringMaps = new AsyncJsonGet().execute(stringURL+"?city="+location).get();
+            jsonStringMaps = new AsyncJsonGet().execute(stringURL+"?map="+location).get();
             Log.d("GetMapsJson1", "Stringa: " + jsonStringMaps);
         } catch (Exception e) {
             Log.d("GetMapsJson2", "FAIL! " + jsonStringMaps);
@@ -455,23 +474,21 @@ public class BeaconApp extends Application {
     }
 
     private void setBeacons(JSONObject object){
-
-        PLACES_BY_BEACONS = new ArrayList<appservweb.isilm.beaconguide.Beacon>() {{
+        Log.d("derperoni","Derperonis");
+        ALL_BEACONS = new ArrayList<appservweb.isilm.beaconguide.Beacon>() {{
             try{
-                Log.d("NumObjects", String.valueOf(jsonObjMaps.getJSONArray(TAG_OBJECTS).length()));
-                Log.d("k1-id", jsonObjMaps.getJSONArray(TAG_OBJECTS).getJSONObject(1).get(TAG_NOME).toString());
-                Log.d("k1-zona", jsonObjMaps.getJSONArray(TAG_OBJECTS).getJSONObject(1).get(TAG_ZONA).toString());
                 for(int k = 0; k < jsonObjMaps.getJSONArray(TAG_OBJECTS).length(); k++){
                     Log.d("ForLog","Iteration: " + Integer.toString(k));
                     add(new appservweb.isilm.beaconguide.Beacon(
                             Integer.parseInt(jsonObjMaps.getJSONArray(TAG_OBJECTS).getJSONObject(k).get(TAG_NOME).toString()),
                             jsonObjMaps.getJSONArray(TAG_OBJECTS).getJSONObject(k).get(TAG_ZONA).toString(),
+                            jsonObjMaps.getJSONArray(TAG_OBJECTS).getJSONObject(k).get(TAG_MAPID).toString(),
                             jsonObjMaps.getJSONArray(TAG_OBJECTS).getJSONObject(k).getJSONArray(TAG_VICINI),
                             jsonObjMaps.getJSONArray(TAG_OBJECTS).getJSONObject(k).getJSONArray(TAG_DIS)
                     ));
                 }
             }catch (Exception e) {
-                Log.d("Failayy", "Fail111");
+                Log.d("Failayy", e.toString());
             }
         }};
     }

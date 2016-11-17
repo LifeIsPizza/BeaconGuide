@@ -16,17 +16,19 @@ import java.util.ListIterator;
  * Created by Enrico on 19/10/2016.
  */
 
-public class Beacon {
-    public Beacon(int idb, String zona, ArrayList<Nearby> vicini, ArrayList<Nearby> vic_dis) {
+public class Beacon implements java.io.Serializable{
+    public Beacon(int idb, String zona, String map_id, ArrayList<Nearby> vicini, ArrayList<Nearby> vic_dis) {
         this.idb = idb;
         this.zona = zona;
+        this.map_id = map_id;
         this.vicini = vicini;
         this.vic_dis = vic_dis;
     }
 
-    public Beacon(int idb, String zona, JSONArray vicini, JSONArray vic_dis) {
+    public Beacon(int idb, String zona, String map_id, JSONArray vicini, JSONArray vic_dis) {
         this.idb = idb;
         this.zona = zona;
+        this.map_id = map_id;
         this.vicini = new ArrayList<Nearby>();
         if(vicini != null) {
             try {
@@ -44,7 +46,6 @@ public class Beacon {
             }
         }
         this.vic_dis = new ArrayList<Nearby>();
-        //TODO: debug, problema se una delle due liste di vicini è vuota
         if (vic_dis != null) {
             Log.d("DisLeng", String.valueOf(vic_dis.length()));
             try {
@@ -64,6 +65,7 @@ public class Beacon {
 
     private int idb;
     private String zona;
+    private String map_id;
     private ArrayList<Nearby> vicini;
     private ArrayList<Nearby> vic_dis;
 
@@ -81,6 +83,14 @@ public class Beacon {
 
     public void setZona(String zona) {
         this.zona = zona;
+    }
+
+    public String getMap_id() {
+        return map_id;
+    }
+
+    public void setMap_id(String map_id) {
+        this.map_id = map_id;
     }
 
     public ArrayList<Nearby> getVicini() {

@@ -4,7 +4,7 @@ package appservweb.isilm.beaconguide;
  * Created by Enrico on 19/10/2016.
  */
 
-public class Nearby {
+public class Nearby implements java.io.Serializable{
     private int ide;
     private int gradi;
     private int peso;

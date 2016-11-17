@@ -45,4 +45,9 @@ public class ListViewSpeaker {
         Log.d("Derp", "Speaking: " + item);
         tts.speak(item, TextToSpeech.QUEUE_FLUSH, null, null);
     }
+
+    public void destroy(){
+        tts.stop();
+        tts.shutdown();
+    }
 }

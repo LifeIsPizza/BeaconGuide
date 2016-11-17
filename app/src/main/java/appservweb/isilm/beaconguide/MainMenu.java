@@ -117,20 +117,32 @@ public class MainMenu extends AppCompatActivity implements TextToSpeech.OnInitLi
         LocalBroadcastManager.getInstance(this).sendBroadcastSync(intent);
     }
 
+    private void changeAct(ArrayList<Beacon> beacons){
+        Intent changeActivity = new Intent(this, BeaconsMenu.class);
+        changeActivity.putExtra("beacons", beacons);
+        startActivity(changeActivity);
+    }
+
     //Classe di Broadcast Receiver con comportamento custom per gestire i messaggi ricevuti
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            String message = intent.getStringExtra("message");
-            Log.d("receiver", "Got message: " + message);
-            ArrayList<String> places;
-            places = (ArrayList<String>) intent.getSerializableExtra("places");
-            values.clear();
-            for (int k = 0; k < places.size(); k++)
-            {
-                values.add(k, places.get(k));
+            if (intent.getIntExtra("id", 0) == 1) { //Se l'id del messaggio è 1, sto ricevendo la lista mappe
+                String message = intent.getStringExtra("message");
+                Log.d("receiver", "Got message: " + message);
+                ArrayList<String> places;
+                places = (ArrayList<String>) intent.getSerializableExtra("places");
+                values.clear();
+                for (int k = 0; k < places.size(); k++) {
+                    values.add(k, places.get(k));
+                }
+                adapter.notifyDataSetChanged();
             }
-            adapter.notifyDataSetChanged();
+            else if (intent.getIntExtra("id", 0) == 2) { //ID = 2, sono i beacon
+                ArrayList<Beacon> beacons;
+                beacons = (ArrayList<Beacon>) intent.getSerializableExtra("beacons");
+                changeAct(beacons);
+            }
             //Il thread di ranging manda messaggi a seconda degli spostamenti. Riceviamo i messaggi ed agiamo
             //Qui andrà gestito il messaggio, vengono fatte cose a seconda del beacon più vicino (incluso nel messaggio)
         }
@@ -202,12 +214,10 @@ public class MainMenu extends AppCompatActivity implements TextToSpeech.OnInitLi
         }
     }
 
-
-
-    public void downloadMaps(){
-        sendMessage(0);
-        menuListItems.setAdapter(adapter);
-        Log.d("Debug", "Downloaded Maps");
+    @Override
+    protected void onDestroy() {
+        speaker.destroy();
+        super.onDestroy();
     }
 }
 

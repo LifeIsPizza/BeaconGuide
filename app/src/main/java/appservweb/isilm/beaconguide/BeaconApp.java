@@ -404,6 +404,8 @@ public class BeaconApp extends Application {
         }
     }
 
+
+
     private void setBeacons(JSONObject object){
         Log.d("derperoni","Derperonis");
         graphNor = new Graph();

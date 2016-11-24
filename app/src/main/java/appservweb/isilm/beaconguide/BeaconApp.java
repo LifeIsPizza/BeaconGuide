@@ -228,34 +228,6 @@ public class BeaconApp extends Application {
         }
     }
 
-    public void getBeaconsListtest(String location){
-        try {
-            //Retrieving della stringa JSON da url
-            jsonString = new AsyncJsonGet().execute(stringURL+"?map="+location).get();
-            Log.d("JSONBEAC1", "Stringa: " + jsonString);
-        } catch (Exception e) {
-            Log.d("JSONBEAC2", "FAIL! " + jsonString);
-            Toast.makeText(getApplicationContext(), "Failed to retrieve JSON from URL", Toast.LENGTH_LONG).show();
-            Intent intent = new Intent(Intent.ACTION_MAIN);
-            intent.addCategory(Intent.CATEGORY_HOME);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
-        }
-        try {
-            Log.d("JSONBEAC3", "Stringa: " + jsonString);
-            jsonObj = new JSONObject(jsonString);
-
-        } catch (Exception e) {
-            Log.d("JSONBEAC4", "FAIL! " + jsonString);
-            Toast.makeText(getApplicationContext(), "JSON Malformed", Toast.LENGTH_LONG).show();
-            Intent intent = new Intent(Intent.ACTION_MAIN);
-            intent.addCategory(Intent.CATEGORY_HOME);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
-
-        }
-    }
-
 
     //Check del network
     public boolean isOnline() {

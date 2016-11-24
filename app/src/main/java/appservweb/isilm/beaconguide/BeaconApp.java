@@ -74,6 +74,8 @@ public class BeaconApp extends Application {
     private static String jsonStringMaps = "";
     private static JSONObject jsonObjMaps = null;
     private static ArrayList<appservweb.isilm.beaconguide.Beacon> ALL_BEACONS;
+    private static Graph graphNor;
+    private static Graph graphDis;
 
     @Override
     public void onCreate() {
@@ -406,6 +408,8 @@ public class BeaconApp extends Application {
 
     private void setBeacons(JSONObject object){
         Log.d("derperoni","Derperonis");
+        graphNor = new Graph();
+        graphDis = new Graph();
         ALL_BEACONS = new ArrayList<appservweb.isilm.beaconguide.Beacon>() {{
             try{
                 for(int k = 0; k < jsonObjMaps.getJSONArray(TAG_OBJECTS).length(); k++){
@@ -415,7 +419,9 @@ public class BeaconApp extends Application {
                             jsonObjMaps.getJSONArray(TAG_OBJECTS).getJSONObject(k).get(TAG_ZONA).toString(),
                             jsonObjMaps.getJSONArray(TAG_OBJECTS).getJSONObject(k).get(TAG_MAPID).toString(),
                             jsonObjMaps.getJSONArray(TAG_OBJECTS).getJSONObject(k).getJSONArray(TAG_VICINI),
-                            jsonObjMaps.getJSONArray(TAG_OBJECTS).getJSONObject(k).getJSONArray(TAG_DIS)
+                            jsonObjMaps.getJSONArray(TAG_OBJECTS).getJSONObject(k).getJSONArray(TAG_DIS),
+                            graphNor,
+                            graphDis
                     ));
                 }
             }catch (Exception e) {

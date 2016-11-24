@@ -7,10 +7,10 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Collection;
+/*import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
+import java.util.ListIterator;*/
 
 /**
  * Created by Enrico on 19/10/2016.
@@ -25,11 +25,11 @@ public class Beacon implements java.io.Serializable{
         this.vic_dis = vic_dis;
     }
 
-    public Beacon(int idb, String zona, String map_id, JSONArray vicini, JSONArray vic_dis) {
+    public Beacon(int idb, String zona, String map_id, JSONArray vicini, JSONArray vic_dis, Graph graphNor, Graph graphDis) {
         this.idb = idb;
         this.zona = zona;
         this.map_id = map_id;
-        this.vicini = new ArrayList<Nearby>();
+        this.vicini = new ArrayList<>();
         if(vicini != null) {
             try {
                 Log.d("VicLeng", String.valueOf(vicini.length()));
@@ -40,15 +40,18 @@ public class Beacon implements java.io.Serializable{
                             vicini.getJSONObject(k).getInt("gradi"),
                             vicini.getJSONObject(k).getInt("costo")
                     ));
+                    graphNor.addLink(idb,vicini.getJSONObject(k).getInt("beacon_arrivo"),
+                            vicini.getJSONObject(k).getInt("gradi"),
+                            vicini.getJSONObject(k).getInt("costo"));
                 }
             } catch (Exception E) {
 
             }
         }
-        this.vic_dis = new ArrayList<Nearby>();
+        this.vic_dis = new ArrayList<>();
         if (vic_dis != null) {
-            Log.d("DisLeng", String.valueOf(vic_dis.length()));
             try {
+                Log.d("DisLeng", String.valueOf(vic_dis.length()));
                 for (int k = 0; k < vic_dis.length(); k++) {
                     Log.d("DisLeng", String.valueOf(vic_dis.getJSONObject(k).getInt("gradi")));
                     this.vic_dis.add(new Nearby(
@@ -56,6 +59,9 @@ public class Beacon implements java.io.Serializable{
                             vic_dis.getJSONObject(k).getInt("gradi"),
                             vic_dis.getJSONObject(k).getInt("costo")
                     ));
+                    graphDis.addLink(idb,vicini.getJSONObject(k).getInt("beacon_arrivo"),
+                            vicini.getJSONObject(k).getInt("gradi"),
+                            vicini.getJSONObject(k).getInt("costo"));
                 }
             } catch (Exception E) {
 

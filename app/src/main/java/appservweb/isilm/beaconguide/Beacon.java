@@ -25,10 +25,14 @@ public class Beacon implements java.io.Serializable{
         this.vic_dis = vic_dis;
     }
 
-    public Beacon(int idb, String zona, String map_id, JSONArray vicini, JSONArray vic_dis, Graph graphNor, Graph graphDis) {
+    public Beacon(int idb, String zona, String map_id, int top_x, int top_y, int bottom_x, int bottom_y, JSONArray vicini, JSONArray vic_dis, Graph graphNor, Graph graphDis) {
         this.idb = idb;
         this.zona = zona;
         this.map_id = map_id;
+        this.top_x = top_x;
+        this.top_y = top_y;
+        this.bottom_x = bottom_x;
+        this.bottom_y = bottom_y;
         this.vicini = new ArrayList<>();
         if(vicini != null) {
             try {
@@ -72,6 +76,10 @@ public class Beacon implements java.io.Serializable{
     private int idb;
     private String zona;
     private String map_id;
+    private int top_x;
+    private int top_y;
+    private int bottom_x;
+    private int bottom_y;
     private ArrayList<Nearby> vicini;
     private ArrayList<Nearby> vic_dis;
 
@@ -97,6 +105,38 @@ public class Beacon implements java.io.Serializable{
 
     public void setMap_id(String map_id) {
         this.map_id = map_id;
+    }
+
+    public int getTop_x() {
+        return top_x;
+    }
+
+    public void setTop_x(int top_x) {
+        this.top_x = top_x;
+    }
+
+    public int getTop_y() {
+        return top_y;
+    }
+
+    public void setTop_y(int top_y) {
+        this.top_y = top_y;
+    }
+
+    public int getBottom_x() {
+        return bottom_x;
+    }
+
+    public void setBottom_x(int bottom_x) {
+        this.bottom_x = bottom_x;
+    }
+
+    public int getBottom_y() {
+        return bottom_y;
+    }
+
+    public void setBottom_y(int bottom_y) {
+        this.bottom_y = bottom_y;
     }
 
     public ArrayList<Nearby> getVicini() {

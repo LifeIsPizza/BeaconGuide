@@ -397,12 +397,10 @@ public class BeaconApp extends Application {
             Log.d("GetMapsJson4", "FAIL! " + jsonStringMaps);
             Toast.makeText(getApplicationContext(), "JSON Malformed", Toast.LENGTH_LONG).show();
             //System.exit(0);
-
-            Intent intent = new Intent(Intent.ACTION_MAIN);
+            Intent intent = new Intent();
+            intent.setAction(Intent.ACTION_MAIN);
             intent.addCategory(Intent.CATEGORY_HOME);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
-
         }
     }
 
@@ -418,6 +416,10 @@ public class BeaconApp extends Application {
                             Integer.parseInt(jsonObjMaps.getJSONArray(TAG_OBJECTS).getJSONObject(k).get(TAG_NOME).toString()),
                             jsonObjMaps.getJSONArray(TAG_OBJECTS).getJSONObject(k).get(TAG_ZONA).toString(),
                             jsonObjMaps.getJSONArray(TAG_OBJECTS).getJSONObject(k).get(TAG_MAPID).toString(),
+                            Integer.parseInt(jsonObjMaps.getJSONArray(TAG_OBJECTS).getJSONObject(k).get("top_x").toString()),
+                            Integer.parseInt(jsonObjMaps.getJSONArray(TAG_OBJECTS).getJSONObject(k).get("top_y").toString()),
+                            Integer.parseInt(jsonObjMaps.getJSONArray(TAG_OBJECTS).getJSONObject(k).get("bottom_x").toString()),
+                            Integer.parseInt(jsonObjMaps.getJSONArray(TAG_OBJECTS).getJSONObject(k).get("bottom_y").toString()),
                             jsonObjMaps.getJSONArray(TAG_OBJECTS).getJSONObject(k).getJSONArray(TAG_VICINI),
                             jsonObjMaps.getJSONArray(TAG_OBJECTS).getJSONObject(k).getJSONArray(TAG_DIS),
                             graphNor,

@@ -123,6 +123,15 @@ public class MainMenu extends AppCompatActivity implements TextToSpeech.OnInitLi
         startActivity(changeActivity);
     }
 
+    @Override
+    public void onBackPressed() {
+        Intent intent = new Intent();
+        intent.setAction(Intent.ACTION_MAIN);
+        intent.addCategory(Intent.CATEGORY_HOME);
+        startActivity(intent);
+    }
+
+
     //Classe di Broadcast Receiver con comportamento custom per gestire i messaggi ricevuti
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override

@@ -89,6 +89,12 @@ public class BeaconsMenu extends AppCompatActivity implements TextToSpeech.OnIni
         startActivity(changeActivity);
     }
 
+    @Override
+    public void onBackPressed() {
+        Intent changeActivity = new Intent(this, MainMenu.class);
+        startActivity(changeActivity);
+    }
+
     public void onInit(int status) {
         Log.d("onInit", "MainMenu");
         speaker.onInit(status);

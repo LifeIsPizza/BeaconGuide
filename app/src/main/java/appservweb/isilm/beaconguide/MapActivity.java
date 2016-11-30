@@ -12,17 +12,21 @@ import android.hardware.SensorManager;
 import android.speech.tts.TextToSpeech;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.ViewTreeObserver;
+import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.Locale;
 import java.util.Random;
 
-public class MapActivity extends AppCompatActivity implements TextToSpeech.OnInitListener,SensorEventListener {
+public class MapActivity extends AppCompatActivity implements SensorEventListener {
 
-    private ListViewSpeaker speaker;
+    private TextToSpeech tts;
     private ArrayList<Beacon> beacons;
 
     ImageView mapView;
@@ -46,6 +50,23 @@ public class MapActivity extends AppCompatActivity implements TextToSpeech.OnIni
         mapView = (ImageView) findViewById(R.id.imageView2);
         drawView = (ImageView) findViewById(R.id.imageView);
         textDirections = (TextView) findViewById(R.id.textDirections);
+        textDirections.addTextChangedListener(new TextWatcher() {
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start,
+                                          int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start,
+                                      int before, int count) {
+                //do stuff
+            }
+        });
+
         Intent intent = getIntent();
         beacons = (ArrayList<Beacon>) intent.getSerializableExtra("beacons");
         mapView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
@@ -66,22 +87,27 @@ public class MapActivity extends AppCompatActivity implements TextToSpeech.OnIni
     }
 
 
-    public void onInit(int status) {
-        Log.d("onInit", "MainMenu");
-        speaker.onInit(status);
-        mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-        mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION),
-                SensorManager.SENSOR_DELAY_GAME);
+    @Override
+    public void onRestart() {
+        super.onRestart();
+        //speaker.destroy();
+        Log.d("MapActivity", "Mi sto Restartando");
+        Intent changeActivity = new Intent(this, MainMenu.class);
+        startActivity(changeActivity);
     }
 
-    protected void onDestroy() {
-        speaker.destroy();
-        super.onDestroy();
-    }
     @Override
     protected void onResume() {
         super.onResume();
-
+        if(tts != null){
+            tts.stop();
+            tts.shutdown();
+        }
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        resumeTTS();
+        mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION),
+                SensorManager.SENSOR_DELAY_NORMAL);
         // for the system's orientation sensor registered listeners
 
     }
@@ -89,8 +115,11 @@ public class MapActivity extends AppCompatActivity implements TextToSpeech.OnIni
     @Override
     protected void onPause() {
         super.onPause();
-
-        // to stop the listener and save battery
+        if(tts != null){
+            tts.stop();
+            tts.shutdown();
+        }
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         mSensorManager.unregisterListener(this);
     }
     @Override
@@ -152,7 +181,9 @@ public class MapActivity extends AppCompatActivity implements TextToSpeech.OnIni
         {
             oldDirection = directions;
             textDirections.setText(directions);
-            speaker.speakItem(oldDirection);
+            tts.speak(oldDirection, TextToSpeech.QUEUE_FLUSH, null, null);
+            //if (speaker != null)
+            //    speaker.speakItem(oldDirection);
         }
     }
 
@@ -194,6 +225,27 @@ public class MapActivity extends AppCompatActivity implements TextToSpeech.OnIni
             }
         }
         return 0;
+    }
+
+    private void resumeTTS(){
+        tts = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
+
+            @Override
+            public void onInit(int status) {
+                if (status == TextToSpeech.SUCCESS) {
+                    Log.d("onInit", "setLanguage");
+                    int result = tts.setLanguage(Locale.ITALIAN);
+                    if (result == TextToSpeech.LANG_MISSING_DATA
+                            || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                        Log.e("TTS", "This Language is not supported");
+                    } else {
+                        Log.d("Testing", "Inizializzazione corretta");
+                    }
+                } else {
+                    Log.e("TTS", "Initilization Failed!");
+                }
+            }
+        });
     }
 
 }

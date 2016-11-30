@@ -44,18 +44,19 @@ public class MainMenu extends AppCompatActivity implements TextToSpeech.OnInitLi
     private ListViewSpeaker speaker;
     private ArrayList<String> values;
     private ArrayAdapter<String> adapter;
+    private BluetoothAdapter mBluetoothAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
-        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter(); //Adattatore Bluetooth
         Toolbar toolbar = (Toolbar) findViewById(R.id.myToolbar);
         setActionBar(toolbar);
         menuListItems = (ListView) findViewById(R.id.lstDownloadedMaps);
 
         //Check se bluetooth e network sono abilitati.
         //Attenzione: se l'IF non ha successo, l'app si chiude. Se ha successo inizializziamo il TTS e procediamo
+        /*
         if(checkNetwork() && checkBluetooth(mBluetoothAdapter)) {
             speaker = new ListViewSpeaker(this, this);
             menuListItems.setLongClickable(true);
@@ -78,7 +79,7 @@ public class MainMenu extends AppCompatActivity implements TextToSpeech.OnInitLi
 
             });
         }
-
+        */
         //Lista di test
         values = new ArrayList<String>();
 
@@ -106,6 +107,40 @@ public class MainMenu extends AppCompatActivity implements TextToSpeech.OnInitLi
         //Broadcast manager di messaggi per message passing da UI a Background thread di ranging
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
                 new IntentFilter("custom-event-name"));
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        //speaker.destroy();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        checkNetwork();
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        checkBluetooth(mBluetoothAdapter);
+        speaker = new ListViewSpeaker(this, this);
+        menuListItems.setLongClickable(true);
+        menuListItems.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Object listItem = menuListItems.getItemAtPosition(position);
+                speaker.speakItem(listItem.toString());
+            }
+        });
+        menuListItems.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener(){
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                Log.v("main long clicked","pos: " + position);
+                Object listItem = menuListItems.getItemAtPosition(position);
+                speaker.speakItem(listItem.toString());
+                sendMessage(position);
+                return true;
+            }
+
+        });
     }
 
     private void sendMessage(int id) {
@@ -180,7 +215,7 @@ public class MainMenu extends AppCompatActivity implements TextToSpeech.OnInitLi
     }
 
     //Check se il bluetooth è attivo
-    public boolean checkBluetooth(BluetoothAdapter mBluetoothAdapter){
+    public void checkBluetooth(BluetoothAdapter mBluetoothAdapter){
         if (!mBluetoothAdapter.isEnabled()){
             AlertDialog alertDialog = new AlertDialog.Builder(MainMenu.this).create();
             alertDialog.setTitle("Warning");
@@ -189,20 +224,19 @@ public class MainMenu extends AppCompatActivity implements TextToSpeech.OnInitLi
                     new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
                             dialog.dismiss();
-                            finish();
+                            Intent intent = new Intent(Intent.ACTION_MAIN);
+                            intent.addCategory(Intent.CATEGORY_HOME);
+                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            startActivity(intent);
                         }
                     });
             alertDialog.show();
-            return false;
 
-        }
-        else{
-            return true;
         }
     }
 
     //Check se la connessione ad internet è presente
-    public boolean checkNetwork(){
+    public void checkNetwork(){
         if (!isOnline()){
             AlertDialog alertDialog = new AlertDialog.Builder(MainMenu.this).create();
             alertDialog.setTitle("Warning");
@@ -211,15 +245,14 @@ public class MainMenu extends AppCompatActivity implements TextToSpeech.OnInitLi
                     new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
                             dialog.dismiss();
-                            finish();
+                            Intent intent = new Intent(Intent.ACTION_MAIN);
+                            intent.addCategory(Intent.CATEGORY_HOME);
+                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            startActivity(intent);
                         }
                     });
             alertDialog.show();
-            return false;
 
-        }
-        else{
-            return true;
         }
     }
 

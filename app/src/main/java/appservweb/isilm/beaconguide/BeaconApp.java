@@ -90,21 +90,32 @@ public class BeaconApp extends Application {
 
             @Override
             public void onActivityStarted(Activity activity) {
+                //OLD VERSION
+                /*
                 if (isOnline()) { //Va fatto il check prima altrimenti spamma notifiche
                     //L'app non muore completamente nemmeno dopo system exit, ripartendo il flag è resettato e spamma notifiche
                     getLocationsList();
                     ////connectToManager(); //Non decommentare questo, decommenta quello in resume
                 }
+                */
+                //FINE OLD VERSION
+                getLocationsList();
+                Log.d("BeaconApp", "Starting");
             }
 
             @Override
             public void onActivityResumed(Activity activity) {
+                // OLD VERSION
+                /*
                 if (isOnline()) { //Va fatto il check prima altrimenti spamma notifiche
                     //L'app non muore completamente nemmeno dopo system exit, ripartendo il flag è resettato e spamma notifiche
-                    //#TODO 1 decommenta il connectToManager
-                    //connectToManager(); //Decommenta questo! Ma solo quando devi provare il ranging di beacon
+                    connectToManager(); //Decommenta questo! Ma solo quando devi provare il ranging di beacon
                 }
+                */
+                //FINE OLD VERSION
+                //#TODO 1 decommenta il connectToManager
                 Log.d("BeaconApp", "Resuming");
+                connectToManager();
             }
 
             @Override
@@ -112,7 +123,8 @@ public class BeaconApp extends Application {
                 //Fai cose ad attività pausata
                 if(beaconManager!=null) {
                     beaconManager.disconnect();
-                    beaconManager = null;
+                    //beaconManager = null;
+                    Log.d("BeaconApp", "manager Disconnected");
                 }
                 Log.d("BeaconApp", "Pausing");
             }
@@ -122,7 +134,7 @@ public class BeaconApp extends Application {
                 /*
                 if(beaconManager!=null) {
                     beaconManager.disconnect();
-                    beaconManager = null;
+                    //beaconManager = null;
                 }
                 */
                 Log.d("BeaconApp", "Stopping");
@@ -171,11 +183,13 @@ public class BeaconApp extends Application {
                     Beacon nearestBeacon = list.get(0); //Il primo della lista è il più vicino
                     Log.d("Nearest","Beacon: " + Integer.toString(nearestBeacon.getMajor()));
                     //Decommenta il connectToManager in onresume
+                    /*
                     if (!haveNotify){ //Se non ho notificato (prima volta/entrata) faccio il procedimento di notifica
                         //E download del JSON
                         showNotification("Entrato", "Entrato nella regione");
                         haveNotify = true;
                     }
+                    */
 
                     //#TODO 2: gestire il nearestBeacon e creare un Beacon "precedente" per checkare se è sempre lo stesso
                     // In caso contrario, ci siamo spostati (il più vicino non è lo stesso più vicino di 2 secondi fa
@@ -183,10 +197,12 @@ public class BeaconApp extends Application {
 
                 }
                 else { //Se la lista è empty, sono uscito dalla regione. Resetto la notifica
+                    /*
                     if (haveNotify) {
                         showNotification("Uscito", "Uscito dalla regione");
                         haveNotify = false;
                     }
+                    */
                 }
             }
 

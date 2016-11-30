@@ -1,5 +1,6 @@
 package appservweb.isilm.beaconguide;
 
+import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -41,6 +42,7 @@ public class BeaconsMenu extends AppCompatActivity implements TextToSpeech.OnIni
             values.add(beacons.get(k).getZona());
         }
 
+        /*
         speaker = new ListViewSpeaker(this, this);
         menuListItems.setLongClickable(true);
         menuListItems.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -61,6 +63,7 @@ public class BeaconsMenu extends AppCompatActivity implements TextToSpeech.OnIni
             }
 
         });
+        */
 
 
         //Adattatore per lista
@@ -100,8 +103,50 @@ public class BeaconsMenu extends AppCompatActivity implements TextToSpeech.OnIni
         speaker.onInit(status);
     }
 
-    protected void onDestroy() {
-        speaker.destroy();
-        super.onDestroy();
+    @Override
+    public void onStop() {
+        super.onStop();
+        //speaker.destroy();
+        Log.d("BeaconsMenu", "Mi sto Stoppando");
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        //speaker.destroy();
+        Log.d("BeaconsMenu", "Mi sto Pausando");
+    }
+
+    @Override
+    public void onRestart() {
+        super.onRestart();
+        //speaker.destroy();
+        Log.d("BeaconsMenu", "Mi sto Restartando");
+        onBackPressed();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        speaker = new ListViewSpeaker(this, this);
+        menuListItems.setLongClickable(true);
+        menuListItems.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Object listItem = menuListItems.getItemAtPosition(position);
+                speaker.speakItem(listItem.toString());
+            }
+        });
+        menuListItems.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener(){
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                Log.v("main long clicked","pos: " + position);
+                Object listItem = menuListItems.getItemAtPosition(position);
+                speaker.speakItem(listItem.toString());
+                changeAct(beacons);
+                return true;
+            }
+
+        });
     }
 }

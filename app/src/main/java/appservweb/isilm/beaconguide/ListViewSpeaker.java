@@ -20,9 +20,11 @@ import java.util.Locale;
 public class ListViewSpeaker {
 
     private TextToSpeech tts;
+    private boolean flag = false;
 
     public ListViewSpeaker(Context context, OnInitListener listener){
         tts = new TextToSpeech(context, listener);
+        flag = true;
     }
 
     public void onInit(int status) {
@@ -49,5 +51,10 @@ public class ListViewSpeaker {
     public void destroy(){
         tts.stop();
         tts.shutdown();
+        flag = false;
+    }
+
+    public boolean isOn(){
+        return flag;
     }
 }

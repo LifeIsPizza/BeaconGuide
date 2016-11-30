@@ -10,6 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.ViewTreeObserver;
+import android.view.WindowManager;
 import android.widget.ImageView;
 
 import java.util.ArrayList;
@@ -32,6 +33,7 @@ public class MapActivity extends AppCompatActivity implements TextToSpeech.OnIni
         setContentView(R.layout.activity_map);
         mapView = (ImageView) findViewById(R.id.imageView2);
         drawView = (ImageView) findViewById(R.id.imageView);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         listBeaconArea = new ArrayList<BeaconArea>();
         listBeaconArea.add(new BeaconArea(1,1,0,0,1,205/705));
         listBeaconArea.add(new BeaconArea(2,1,0,206/751,533/1058,552/751));
@@ -100,8 +102,13 @@ public class MapActivity extends AppCompatActivity implements TextToSpeech.OnIni
         speaker.onInit(status);
     }
 
-    protected void onDestroy() {
-        speaker.destroy();
-        super.onDestroy();
+
+    @Override
+    public void onRestart() {
+        super.onRestart();
+        //speaker.destroy();
+        Log.d("MapActivity", "Mi sto Restartando");
+        Intent changeActivity = new Intent(this, MainMenu.class);
+        startActivity(changeActivity);
     }
 }

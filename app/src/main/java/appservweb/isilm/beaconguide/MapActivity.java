@@ -39,6 +39,7 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
     private float currentDegree = 0f;
     private int destinationDegree;
     Beacon myBeacon;
+    private Beacon selectedBeacon;
     private int idNextBeacon;
     private int idDestinationBeacon;
     // device sensor manager
@@ -69,6 +70,9 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
 
         Intent intent = getIntent();
         beacons = (ArrayList<Beacon>) intent.getSerializableExtra("beacons");
+
+        selectedBeacon = selectDestBeacon(intent.getStringExtra("selected"));
+
         mapView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
@@ -246,6 +250,17 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
                 }
             }
         });
+    }
+
+    private Beacon selectDestBeacon (String search){
+
+            for (Beacon beac : beacons) {
+                if (beac.getZona() == search) {
+                    return beac;
+                }
+            }
+            return null;
+
     }
 
 }

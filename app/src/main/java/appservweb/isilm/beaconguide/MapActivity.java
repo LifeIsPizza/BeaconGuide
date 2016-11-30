@@ -29,6 +29,7 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
     private TextToSpeech tts;
     private ArrayList<Beacon> beacons;
 
+
     ImageView mapView;
     ImageView drawView;
     TextView textDirections;
@@ -198,8 +199,7 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
         }
         myBeacon = findInList(newID);
 
-        //idNextBeacon = algorithm();
-        idNextBeacon = (myBeacon.getIdb() +1)%3;
+        idNextBeacon = Search.getNext();
         destinationDegree = getNextBeaconDegree(idNextBeacon);
         drawMethod();
     }

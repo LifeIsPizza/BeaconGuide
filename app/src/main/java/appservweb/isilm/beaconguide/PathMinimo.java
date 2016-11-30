@@ -1,11 +1,8 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package appservweb.isilm.beaconguide;
 
+import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  *
@@ -35,6 +32,15 @@ public class PathMinimo {
         return this.path;
     }
     
+    //Ritorna il percorso in forma di lista
+    public List<Integer> getPathNames(){
+        List<Integer> nodesName = null;
+        for (Iterator<Node> it = path.iterator(); it.hasNext();) {
+            nodesName.add(it.next().getName());
+        }
+        return nodesName;
+    }
+    //Update dell'oggetto
     public void setNewMin(int numMin, LinkedList<Node> minPath, int costo){
         numNodes = numMin;
         path = new LinkedList<>(minPath);

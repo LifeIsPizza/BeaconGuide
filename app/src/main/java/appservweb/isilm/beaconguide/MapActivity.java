@@ -47,6 +47,7 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
     Beacon myBeacon;
     private Beacon destinationBeacon;
     private int idNextBeacon;
+    private ArrayList<Graph> graphs;
     // device sensor manager
     private SensorManager mSensorManager;
     @Override
@@ -77,9 +78,10 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
         beacons = (ArrayList<Beacon>) intent.getSerializableExtra("beacons");
 
         destinationBeacon = selectDestBeacon(intent.getStringExtra("selected"));
-        ArrayList<Graph> graphs = (ArrayList<Graph>) intent.getSerializableExtra("graphs");
+        graphs = (ArrayList<Graph>) intent.getSerializableExtra("graphs");
         graph = graphs.get(0);
         search = new Search(graph);
+        /*
         mapView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
@@ -92,6 +94,7 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
                 drawMethod();
             }
         });
+        */
 
 
     }
@@ -137,6 +140,7 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
         Log.d("CDA", "onBackPressed Called");
         Intent changeActivity = new Intent(this, BeaconsMenu.class);
         changeActivity.putExtra("beacons", beacons);
+        changeActivity.putExtra("graphs", graphs);
         startActivity(changeActivity);
     }
 

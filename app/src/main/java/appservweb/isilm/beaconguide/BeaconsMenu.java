@@ -91,10 +91,14 @@ public class BeaconsMenu extends AppCompatActivity implements TextToSpeech.OnIni
         }
     };
 
-    private void changeAct(ArrayList<Beacon> beacons, String selected){
+    private void changeAct(ArrayList<Beacon> beacons, ArrayList<Graph> graphs, String selected){
         Intent changeActivity = new Intent(this, MapActivity.class);
         changeActivity.putExtra("beacons", beacons);
         changeActivity.putExtra("graphs", graphs);
+        if(graphs.isEmpty())
+            Log.d("CheckinGraphs", "Empty");
+        else
+            Log.d("CheckinGraphs", "NotEmpty");
         changeActivity.putExtra("selected", selected);
         startActivity(changeActivity);
     }
@@ -151,7 +155,7 @@ public class BeaconsMenu extends AppCompatActivity implements TextToSpeech.OnIni
                 Log.v("main long clicked","pos: " + position);
                 Object listItem = menuListItems.getItemAtPosition(position);
                 speaker.speakItem(listItem.toString());
-                changeAct(beacons, listItem.toString());
+                changeAct(beacons, graphs, listItem.toString());
                 return true;
             }
 

@@ -1,5 +1,7 @@
 package appservweb.isilm.beaconguide;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -28,6 +30,8 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
 
     private TextToSpeech tts;
     private ArrayList<Beacon> beacons;
+    private Graph graph;
+    private Search search;
 
     ImageView mapView;
     ImageView drawView;
@@ -39,9 +43,8 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
     private float currentDegree = 0f;
     private int destinationDegree;
     Beacon myBeacon;
-    private Beacon selectedBeacon;
+    private Beacon destinationBeacon;
     private int idNextBeacon;
-    private int idDestinationBeacon;
     // device sensor manager
     private SensorManager mSensorManager;
     @Override
@@ -71,18 +74,19 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
         Intent intent = getIntent();
         beacons = (ArrayList<Beacon>) intent.getSerializableExtra("beacons");
 
-        selectedBeacon = selectDestBeacon(intent.getStringExtra("selected"));
-
+        destinationBeacon = selectDestBeacon(intent.getStringExtra("selected"));
+        ArrayList<Graph> graphs = (ArrayList<Graph>) intent.getSerializableExtra("graphs");
+        graph = graphs.get(0);
+        search = new Search(graph);
         mapView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
                 mapView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
                 Random r = new Random();
                 int myBeaconId = Math.abs(r.nextInt()%3) +1;
-                idNextBeacon = (myBeaconId +1)%3;
                 myBeacon = findInList(myBeaconId);
+                idNextBeacon = search.getNext(myBeacon.getIdb(),destinationBeacon.getIdb());
                 destinationDegree = getNextBeaconDegree(idNextBeacon);
-                Log.d("DESTINATION DEGREE "+ destinationDegree, "main menu");
                 drawMethod();
             }
         });
@@ -133,6 +137,18 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
         changeActivity.putExtra("beacons", beacons);
         startActivity(changeActivity);
     }
+
+    //Classe di Broadcast Receiver con comportamento custom per gestire i messaggi ricevuti
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if(intent.getIntExtra("id", 0) == 3) { //ID = 3, è il nuovo beacon
+                Beacon nearest;
+                nearest = (Beacon) intent.getSerializableExtra("nearest");
+                onMyBeaconChanged(nearest.getIdb());
+            }
+        }
+    };
 
     void drawMethod(){
         viewHeight = mapView.getHeight();
@@ -201,9 +217,7 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
             loadNewMap();
         }
         myBeacon = findInList(newID);
-
-        //idNextBeacon = algorithm();
-        idNextBeacon = (myBeacon.getIdb() +1)%3;
+        idNextBeacon = search.getNext(myBeacon.getIdb(),destinationBeacon.getIdb());
         destinationDegree = getNextBeaconDegree(idNextBeacon);
         drawMethod();
     }

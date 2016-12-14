@@ -3,6 +3,7 @@ package appservweb.isilm.beaconguide;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -13,6 +14,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.speech.tts.TextToSpeech;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
@@ -23,6 +25,7 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Locale;
@@ -44,7 +47,7 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
 
     private float currentDegree = 0f;
     private int destinationDegree;
-    Beacon myBeacon;
+    Beacon myBeacon = null;
     private Beacon destinationBeacon;
     private int idNextBeacon;
     private ArrayList<Graph> graphs;
@@ -81,20 +84,25 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
         graphs = (ArrayList<Graph>) intent.getSerializableExtra("graphs");
         graph = graphs.get(0);
         search = new Search(graph);
-        /*
+
         mapView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
                 mapView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                Random r = new Random();
-                int myBeaconId = Math.abs(r.nextInt()%3) +1;
+
+
+                int myBeaconId = 1;
                 myBeacon = findInList(myBeaconId);
                 idNextBeacon = search.getNext(myBeacon.getIdb(),destinationBeacon.getIdb());
                 destinationDegree = getNextBeaconDegree(idNextBeacon);
+                loadNewMap();
                 drawMethod();
             }
         });
-        */
+
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
+                new IntentFilter("custom-event-name"));
 
 
     }
@@ -149,9 +157,12 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
         @Override
         public void onReceive(Context context, Intent intent) {
             if(intent.getIntExtra("id", 0) == 3) { //ID = 3, è il nuovo beacon
+                /*
                 Beacon nearest;
                 nearest = (Beacon) intent.getSerializableExtra("nearest");
                 onMyBeaconChanged(nearest.getIdb());
+                */
+                onMyBeaconChanged(intent.getIntExtra("idBeac", 0));
             }
         }
     };
@@ -219,10 +230,17 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
     }
 
     public void onMyBeaconChanged(int newID){
-        if(myBeacon.getMap_id()!= findInList(newID).getMap_id()){
+        if (myBeacon == null) {
+            myBeacon = findInList(newID);
             loadNewMap();
         }
-        myBeacon = findInList(newID);
+        else if(myBeacon.getMap_id()!= findInList(newID).getMap_id()){
+            myBeacon = findInList(newID);
+            loadNewMap();
+        }
+        else {
+            myBeacon = findInList(newID);
+        }
         idNextBeacon = search.getNext(myBeacon.getIdb(),destinationBeacon.getIdb());
         destinationDegree = getNextBeaconDegree(idNextBeacon);
         drawMethod();
@@ -230,10 +248,15 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
 
     private void loadNewMap() {
         Bitmap.Config conf = Bitmap.Config.ARGB_4444;
-        Bitmap bmp = Bitmap.createBitmap(viewWidth,viewHeight,conf);
+        Bitmap bmp = Bitmap.createBitmap(mapView.getWidth(),mapView.getHeight(),conf);
         try {
-            bmp = BitmapFactory.decodeStream(this.openFileInput(myBeacon.getMap_id()));
-        } catch (FileNotFoundException e) {
+            //bmp = BitmapFactory.decodeStream(this.openFileInput("1"));
+            FileInputStream fiStream;
+            fiStream = getApplicationContext().openFileInput(myBeacon.getMap_id());
+            bmp = BitmapFactory.decodeStream(fiStream);
+            fiStream.close();
+            //bmp = BitmapFactory.decodeStream(getApplicationContext().openFileInput(myBeacon.getMap_id()));
+        } catch (Exception e) {
             e.printStackTrace();
         }
         mapView.setImageBitmap(bmp);
@@ -282,7 +305,7 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
     private Beacon selectDestBeacon (String search){
 
             for (Beacon beac : beacons) {
-                if (beac.getZona() == search) {
+                if (beac.getZona().equals(search)) {
                     return beac;
                 }
             }

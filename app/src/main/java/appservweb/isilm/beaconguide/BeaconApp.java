@@ -8,6 +8,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -36,6 +37,8 @@ import org.json.JSONObject;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -50,6 +53,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.UUID;
 
 /**
@@ -72,11 +76,13 @@ public class BeaconApp extends Application {
             UUID.fromString("B9407F30-F5F8-466E-AFF9-25556B57FE6D"),
             null, null);
     private static final String stringURL = "http://www.manufattidigitali.com/prova/mobile/getJsonDataFromServer";
+    private static String urlmappa;
     private boolean haveNotify = false;
     private static String jsonString = "";
     private static JSONObject jsonObj = null;
     private static String jsonStringMaps = "";
     private static JSONObject jsonObjMaps = null;
+    private static Bitmap bitmap;
     private static ArrayList<appservweb.isilm.beaconguide.Beacon> ALL_BEACONS;
     private static Graph graphNor;
     private static Graph graphDis;
@@ -201,6 +207,17 @@ public class BeaconApp extends Application {
 
                 }
                 else { //Se la lista è empty, sono uscito dalla regione. Resetto la notifica
+                    //Log.d("NoBeacons", "Nessun beacon in Range");
+
+                    Random rand = new Random();
+
+                    // nextInt is normally exclusive of the top value,
+                    // so add 1 to make it inclusive
+                    int randomNum = rand.nextInt((4 - 1) + 1) + 1;
+                    Log.d("RandomBeacon", Integer.toString(randomNum));
+                    sendNearest(randomNum);
+
+
                     /*
                     if (haveNotify) {
                         showNotification("Uscito", "Uscito dalla regione");
@@ -213,6 +230,14 @@ public class BeaconApp extends Application {
 
         });
         doConnect(); //Connessione al BeaconManager e start ranging
+    }
+
+    public void sendNearest(int toSend){
+        Intent intent = new Intent("custom-event-name");
+        intent.putExtra("id", 3);
+        intent.putExtra("idBeac", toSend);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+
     }
 
     public void getLocationsList(){
@@ -334,6 +359,22 @@ public class BeaconApp extends Application {
             jsonString = result;
         }
 
+    }
+
+    private class AsyncBitmapGet extends AsyncTask<String, Void, Bitmap>{
+        protected Bitmap doInBackground(String... params) {
+            try {
+                return getBitmapFromURL(params[0]);
+            } catch (/*IO*/Exception e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+        @Override
+        protected void onPostExecute(Bitmap result) {
+            //do stuff
+
+        }
     }
 
     private void sendPlaces(ArrayList<String> places) {
@@ -465,15 +506,30 @@ public class BeaconApp extends Application {
             }
         }};
         try{
+            Log.d("LengthMappa", Integer.toString(jsonObjMaps.getJSONArray("Mappa").length()));
             for(int p = 0; p < jsonObjMaps.getJSONArray("Mappa").length(); p++){
                 String fileName = (String) jsonObjMaps.getJSONArray("Mappa").getJSONObject(p).get("id");
-                Bitmap bitmap = getBitmapFromURL((String) jsonObjMaps.getJSONArray("Mappa").getJSONObject(p).get("path"));
+                urlmappa = (String) jsonObjMaps.getJSONArray("Mappa").getJSONObject(p).get("path");
+                bitmap = new AsyncBitmapGet().execute(urlmappa).get(); //AsyncBitmapGet().execute(stringURL+"?map="+location).get(); //getBitmapFromURL((String) jsonObjMaps.getJSONArray("Mappa").getJSONObject(p).get("path"));
+
+                FileOutputStream foStream;
+                try {
+                    foStream = getApplicationContext().openFileOutput(fileName, Context.MODE_PRIVATE);
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, foStream);
+                    foStream.close();
+                } catch (Exception e) {
+                    Log.d("saveImage", "Exception 2, Something went wrong!");
+                    e.printStackTrace();
+                }
+
+                /*
                 ByteArrayOutputStream bytes = new ByteArrayOutputStream();
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
-                FileOutputStream fo = openFileOutput(fileName, Context.MODE_PRIVATE);
+                FileOutputStream fo = getApplicationContext().openFileOutput(fileName, Context.MODE_PRIVATE);
                 fo.write(bytes.toByteArray());
                 // remember close file output
                 fo.close();
+                */
 
             }
         }

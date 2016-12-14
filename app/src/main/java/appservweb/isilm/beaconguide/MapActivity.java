@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -22,6 +23,7 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Random;
@@ -223,7 +225,14 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
     }
 
     private void loadNewMap() {
-        //mapView.setImageBitmap();
+        Bitmap.Config conf = Bitmap.Config.ARGB_4444;
+        Bitmap bmp = Bitmap.createBitmap(viewWidth,viewHeight,conf);
+        try {
+            bmp = BitmapFactory.decodeStream(this.openFileInput(myBeacon.getMap_id()));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        mapView.setImageBitmap(bmp);
     }
 
     private Beacon findInList(int id){

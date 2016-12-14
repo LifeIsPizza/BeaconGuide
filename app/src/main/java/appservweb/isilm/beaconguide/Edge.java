@@ -9,7 +9,7 @@ package appservweb.isilm.beaconguide;
  *
  * @author vigna
  */
-public class Edge {
+public class Edge implements java.io.Serializable{
     private final Node src;
     private final Node dst;
     private final int cost;

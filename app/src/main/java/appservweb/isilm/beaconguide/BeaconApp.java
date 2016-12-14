@@ -11,6 +11,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -33,6 +35,8 @@ import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -355,11 +359,23 @@ public class BeaconApp extends Application {
             intent.putExtra("id", 2);
             intent.putExtra("beacons", beacons);
             intent.putExtra("message", "Empty beacons");
+
+            ArrayList<Graph> graphs = new ArrayList<Graph>();
+            graphs.add(graphNor);
+            graphs.add(graphDis);
+            intent.putExtra("graphs", graphs);
+
             LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
         } else {
             intent.putExtra("id", 2);
             intent.putExtra("beacons", beacons);
             intent.putExtra("message", "Some maps found: " + beacons.size());
+
+            ArrayList<Graph> graphs = new ArrayList<Graph>();
+            graphs.add(graphNor);
+            graphs.add(graphDis);
+            intent.putExtra("graphs", graphs);
+
             LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
         }
     }
@@ -448,5 +464,37 @@ public class BeaconApp extends Application {
                 Log.d("Failayy", e.toString());
             }
         }};
+        try{
+            for(int p = 0; p < jsonObjMaps.getJSONArray("Mappa").length(); p++){
+                String fileName = (String) jsonObjMaps.getJSONArray("Mappa").getJSONObject(p).get("id");
+                Bitmap bitmap = getBitmapFromURL((String) jsonObjMaps.getJSONArray("Mappa").getJSONObject(p).get("path"));
+                ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
+                FileOutputStream fo = openFileOutput(fileName, Context.MODE_PRIVATE);
+                fo.write(bytes.toByteArray());
+                // remember close file output
+                fo.close();
+
+            }
+        }
+        catch (Exception e) {
+            Log.d("FailGetJSONArrayMappa", e.toString());
+        }
+    }
+
+
+    public static Bitmap getBitmapFromURL(String src) {
+        try {
+            URL url = new URL(src);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setDoInput(true);
+            connection.connect();
+            InputStream input = connection.getInputStream();
+            Bitmap myBitmap = BitmapFactory.decodeStream(input);
+            return myBitmap;
+        } catch (IOException e) {
+            // Log exception
+            return null;
+        }
     }
 }

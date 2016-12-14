@@ -13,7 +13,7 @@ import java.util.List;
  *
  * @author vigna
  */
-public class Node {
+public class Node implements java.io.Serializable{
     private final int name;
     private final List<Node> viciniNode;
     //private final List<Node> viciniNodeHand;

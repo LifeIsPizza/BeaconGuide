@@ -11,7 +11,7 @@ import java.util.List;
 //Si prediligono i percorsi a costo minore, perciò quelli normali preferiscono le scale all'ascensore
 //quindi, le scale avranno costo 1 mentre l'ascensore avrà costo 2
 
-public class Graph {
+public class Graph implements java.io.Serializable{
     private final List<Node> nodes;
     private final List<Integer> nodesName;
     private final List<Edge> edges;

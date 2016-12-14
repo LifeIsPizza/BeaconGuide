@@ -152,9 +152,10 @@ public class MainMenu extends AppCompatActivity implements TextToSpeech.OnInitLi
         LocalBroadcastManager.getInstance(this).sendBroadcastSync(intent);
     }
 
-    private void changeAct(ArrayList<Beacon> beacons){
+    private void changeAct(ArrayList<Beacon> beacons, ArrayList<Graph> graphs){
         Intent changeActivity = new Intent(this, BeaconsMenu.class);
         changeActivity.putExtra("beacons", beacons);
+        changeActivity.putExtra("graphs", graphs);
         startActivity(changeActivity);
     }
 
@@ -184,8 +185,10 @@ public class MainMenu extends AppCompatActivity implements TextToSpeech.OnInitLi
             }
             else if (intent.getIntExtra("id", 0) == 2) { //ID = 2, sono i beacon
                 ArrayList<Beacon> beacons;
+                ArrayList<Graph> graphs;
                 beacons = (ArrayList<Beacon>) intent.getSerializableExtra("beacons");
-                changeAct(beacons);
+                graphs = (ArrayList<Graph>) intent.getSerializableExtra("graphs");
+                changeAct(beacons, graphs);
             }
             //Il thread di ranging manda messaggi a seconda degli spostamenti. Riceviamo i messaggi ed agiamo
             //Qui andrà gestito il messaggio, vengono fatte cose a seconda del beacon più vicino (incluso nel messaggio)

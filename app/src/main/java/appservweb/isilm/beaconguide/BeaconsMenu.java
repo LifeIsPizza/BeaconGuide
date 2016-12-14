@@ -25,6 +25,7 @@ public class BeaconsMenu extends AppCompatActivity implements TextToSpeech.OnIni
     private ArrayList<String> values;
     private ArrayAdapter<String> adapter;
     private ArrayList<Beacon> beacons;
+    private ArrayList<Graph> graphs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +42,10 @@ public class BeaconsMenu extends AppCompatActivity implements TextToSpeech.OnIni
         for (int k = 0; k < beacons.size(); k++ ){
             values.add(beacons.get(k).getZona());
         }
+
+        graphs = (ArrayList<Graph>) intent.getSerializableExtra("graphs");
+
+
 
         /*
         speaker = new ListViewSpeaker(this, this);
@@ -89,6 +94,7 @@ public class BeaconsMenu extends AppCompatActivity implements TextToSpeech.OnIni
     private void changeAct(ArrayList<Beacon> beacons, String selected){
         Intent changeActivity = new Intent(this, MapActivity.class);
         changeActivity.putExtra("beacons", beacons);
+        changeActivity.putExtra("graphs", graphs);
         changeActivity.putExtra("selected", selected);
         startActivity(changeActivity);
     }

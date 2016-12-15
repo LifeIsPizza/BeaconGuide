@@ -191,7 +191,8 @@ public class BeaconApp extends Application {
                 if (!list.isEmpty()) {
                     //Se ho notificato, ad ogni discovery periodica aggiorno solo il nearestBeacon
                     Beacon nearestBeacon = list.get(0); //Il primo della lista è il più vicino
-                    Log.d("Nearest","Beacon: " + Integer.toString(nearestBeacon.getMajor()));
+                    //Log.d("Nearest","Beacon: " + Integer.toString(nearestBeacon.getMajor()));
+                    sendNearest(nearestBeacon.getMajor() - 100);
                     //Decommenta il connectToManager in onresume
                     /*
                     if (!haveNotify){ //Se non ho notificato (prima volta/entrata) faccio il procedimento di notifica
@@ -209,14 +210,15 @@ public class BeaconApp extends Application {
                 else { //Se la lista è empty, sono uscito dalla regione. Resetto la notifica
                     //Log.d("NoBeacons", "Nessun beacon in Range");
 
+                    //Randomize for testing
+                    /*
                     Random rand = new Random();
-
                     // nextInt is normally exclusive of the top value,
                     // so add 1 to make it inclusive
                     int randomNum = rand.nextInt((4 - 1) + 1) + 1;
                     Log.d("RandomBeacon", Integer.toString(randomNum));
                     sendNearest(randomNum);
-
+                    */
 
                     /*
                     if (haveNotify) {
@@ -233,7 +235,7 @@ public class BeaconApp extends Application {
     }
 
     public void sendNearest(int toSend){
-        Intent intent = new Intent("custom-event-name");
+        Intent intent = new Intent("intent_nearest");
         intent.putExtra("id", 3);
         intent.putExtra("idBeac", toSend);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
@@ -486,7 +488,7 @@ public class BeaconApp extends Application {
         ALL_BEACONS = new ArrayList<appservweb.isilm.beaconguide.Beacon>() {{
             try{
                 for(int k = 0; k < jsonObjMaps.getJSONArray(TAG_OBJECTS).length(); k++){
-                    Log.d("ForLog","Iteration: " + Integer.toString(k));
+                    //Log.d("ForLog","Iteration: " + Integer.toString(k));
                     add(new appservweb.isilm.beaconguide.Beacon(
                             Integer.parseInt(jsonObjMaps.getJSONArray(TAG_OBJECTS).getJSONObject(k).get(TAG_NOME).toString()),
                             jsonObjMaps.getJSONArray(TAG_OBJECTS).getJSONObject(k).get(TAG_ZONA).toString(),

@@ -76,11 +76,23 @@ public class Graph implements java.io.Serializable{
         return null;
     }   
     
-    /*@Override
-    public String toString() {
+    //@Override
+    public void toStringa() {
         String solutionString = "\n";
-        solutionString = this.nodes.stream().map((node) -> node.getName() + "\n").reduce(solutionString, String::concat);
-        return solutionString;
-    }*/
+        for (Node n: nodes
+             ) {
+            solutionString +="Nodo_nome: "+n.getName()+"\n";
+            for (Node m: n.getViciniNode()
+                 ) {
+                solutionString +="   Vicino: "+m.getName()+"\n";
+            }
+
+        }
+        System.out.println(solutionString);
+        //return solutionString;
+    }
+
+
+
      
 }

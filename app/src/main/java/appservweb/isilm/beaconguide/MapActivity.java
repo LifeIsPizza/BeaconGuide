@@ -28,6 +28,8 @@ import android.widget.TextView;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 
@@ -82,27 +84,30 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
 
         destinationBeacon = selectDestBeacon(intent.getStringExtra("selected"));
         graphs = (ArrayList<Graph>) intent.getSerializableExtra("graphs");
-        graph = graphs.get(0);
+        //1 è disabili
+        graph = graphs.get(1);
+
+        graph.toStringa();
+        //Log.d("graph",graph.toString());
         search = new Search(graph);
 
         mapView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
                 mapView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                //int myBeaconId = 0;
+                //myBeacon = findInList(myBeaconId);
+                //idNextBeacon = search.getNext(myBeacon.getIdb(),destinationBeacon.getIdb());
+                //destinationDegree = getNextBeaconDegree(idNextBeacon);
+                //loadNewMap();
 
-
-                int myBeaconId = 1;
-                myBeacon = findInList(myBeaconId);
-                idNextBeacon = search.getNext(myBeacon.getIdb(),destinationBeacon.getIdb());
-                destinationDegree = getNextBeaconDegree(idNextBeacon);
-                loadNewMap();
-                drawMethod();
+                //drawMethod();
             }
         });
 
 
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
-                new IntentFilter("custom-event-name"));
+                new IntentFilter("intent_nearest"));
 
 
     }
@@ -157,12 +162,21 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
         @Override
         public void onReceive(Context context, Intent intent) {
             if(intent.getIntExtra("id", 0) == 3) { //ID = 3, è il nuovo beacon
+                Log.d("MessaggioRic", Integer.toString(intent.getIntExtra("idBeac", 0)));
                 /*
                 Beacon nearest;
                 nearest = (Beacon) intent.getSerializableExtra("nearest");
                 onMyBeaconChanged(nearest.getIdb());
                 */
-                onMyBeaconChanged(intent.getIntExtra("idBeac", 0));
+                if (myBeacon == null){
+                    onMyBeaconChanged(intent.getIntExtra("idBeac", 0));
+                }
+                else {
+                    if (intent.getIntExtra("idBeac", 0) != myBeacon.getIdb()){
+                        onMyBeaconChanged(intent.getIntExtra("idBeac", 0));
+                    }
+                }
+                //onMyBeaconChanged(intent.getIntExtra("idBeac", 0));
             }
         }
     };
@@ -199,9 +213,9 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
         currentDegree = Math.round(sensorEvent.values[0]);
-        Log.d("degree: " + currentDegree, "MainMenu");
+        //Log.d("degree: " + currentDegree, "MainMenu");
         currentDegree = (int)destinationDegree -currentDegree;
-        Log.d("degree: " + currentDegree, "MainMenu");
+        //Log.d("degree: " + currentDegree, "MainMenu");
 
         if(currentDegree<0)
             currentDegree = 360+currentDegree;
@@ -241,7 +255,16 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
         else {
             myBeacon = findInList(newID);
         }
+
+        Log.d("destin", Integer.toString(destinationBeacon.getIdb()));
+        Log.d("mybeacon", Integer.toString(myBeacon.getIdb()));
+
+        Log.d("GETNEXT di", Integer.toString(myBeacon.getIdb()) +", "+ Integer.toString(destinationBeacon.getIdb()));
         idNextBeacon = search.getNext(myBeacon.getIdb(),destinationBeacon.getIdb());
+        //List<Integer> path = search.getPath(myBeacon.getIdb(),destinationBeacon.getIdb());
+        Log.d("nextbeacon", Integer.toString(idNextBeacon));
+        //System.out.println("Path di ricerca: " + Arrays.toString(path.toArray()));
+
         destinationDegree = getNextBeaconDegree(idNextBeacon);
         drawMethod();
     }

@@ -30,6 +30,7 @@ public class Search
     public int getNext(int src, int dst){
         try
         {
+            visited.clear();
             int index = g.getNodesNames().indexOf(src);
             Node start = g.getNodes().get(index);
             visited.add(start);
@@ -50,6 +51,7 @@ public class Search
     public List<Integer> getPath(int src, int dst){
         try
         {
+            visited.clear();
             int index = g.getNodesNames().indexOf(src);
             Node start = g.getNodes().get(index);
             visited.add(start);

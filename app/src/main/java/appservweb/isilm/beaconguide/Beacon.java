@@ -36,9 +36,9 @@ public class Beacon implements java.io.Serializable{
         this.vicini = new ArrayList<>();
         if(vicini != null) {
             try {
-                Log.d("VicLeng", String.valueOf(vicini.length()));
+                //Log.d("VicLeng", String.valueOf(vicini.length()));
                 for (int k = 0; k < vicini.length(); k++) {
-                    Log.d("VicLeng", String.valueOf(vicini.getJSONObject(k).getInt("gradi")));
+                    //Log.d("VicLeng", String.valueOf(vicini.getJSONObject(k).getInt("gradi")));
                     this.vicini.add(new Nearby(
                             vicini.getJSONObject(k).getInt("beacon_arrivo"),
                             vicini.getJSONObject(k).getInt("gradi"),
@@ -55,17 +55,17 @@ public class Beacon implements java.io.Serializable{
         this.vic_dis = new ArrayList<>();
         if (vic_dis != null) {
             try {
-                Log.d("DisLeng", String.valueOf(vic_dis.length()));
+                //Log.d("DisLeng", String.valueOf(vic_dis.length()));
                 for (int k = 0; k < vic_dis.length(); k++) {
-                    Log.d("DisLeng", String.valueOf(vic_dis.getJSONObject(k).getInt("gradi")));
+                    //Log.d("DisLeng", String.valueOf(vic_dis.getJSONObject(k).getInt("gradi")));
                     this.vic_dis.add(new Nearby(
                             vic_dis.getJSONObject(k).getInt("beacon_arrivo"),
                             vic_dis.getJSONObject(k).getInt("gradi"),
                             vic_dis.getJSONObject(k).getInt("costo")
                     ));
-                    graphDis.addLink(idb,vicini.getJSONObject(k).getInt("beacon_arrivo"),
-                            vicini.getJSONObject(k).getInt("gradi"),
-                            vicini.getJSONObject(k).getInt("costo"));
+                    graphDis.addLink(idb,vic_dis.getJSONObject(k).getInt("beacon_arrivo"),
+                            vic_dis.getJSONObject(k).getInt("gradi"),
+                            vic_dis.getJSONObject(k).getInt("costo"));
                 }
             } catch (Exception E) {
 

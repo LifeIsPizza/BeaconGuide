@@ -31,7 +31,7 @@
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".MapActivity"
             android:theme="@style/AppTheme.NoActionBar"
-            android:screenOrientation="landscape"></activity>
+            android:screenOrientation="portrait"></activity>
     </application>
 
 </manifest>

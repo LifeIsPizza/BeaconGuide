@@ -28,6 +28,8 @@ public class Search
     
     //Ritorno l'id del beacon successivo
     public int getNext(int src, int dst){
+        if (src == dst)
+            return dst;
         try
         {
             visited.clear();
@@ -84,6 +86,9 @@ public class Search
             if (visited.contains(node)) {
                 continue;
             }
+            Edge edge = graph.getEdge(actual, node);
+            if (edge != null)
+                cost +=edge.getCost();
             if (node.getName() == dst) {
                 visited.add(node);
                 
@@ -92,6 +97,7 @@ public class Search
                 {
                     minimo.setNewMin(visited.size(), visited, cost);
                 }
+                cost-=edge.getCost();
                 System.out.println(printPath(visited));
                 visited.removeLast();
                 break;

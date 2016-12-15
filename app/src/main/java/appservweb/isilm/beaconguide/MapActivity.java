@@ -46,8 +46,10 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
     private int viewWidth;
     private int viewHeight;
     private String oldDirection = "";
+    private final String arrivo = "Arrivato a Destinazione";
+    private int rangingFlag = 0;
 
-    private float currentDegree = 0f;
+    private float currentDegree = 0;
     private int destinationDegree;
     Beacon myBeacon = null;
     private Beacon destinationBeacon;
@@ -85,7 +87,7 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
         destinationBeacon = selectDestBeacon(intent.getStringExtra("selected"));
         graphs = (ArrayList<Graph>) intent.getSerializableExtra("graphs");
         //1 è disabili
-        graph = graphs.get(1);
+        graph = graphs.get(0);
 
         graph.toStringa();
         //Log.d("graph",graph.toString());
@@ -174,7 +176,10 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
                 else {
                     if (intent.getIntExtra("idBeac", 0) != myBeacon.getIdb()){
                         onMyBeaconChanged(intent.getIntExtra("idBeac", 0));
+                        rangingFlag = 0;
                     }
+                    else
+                        rangingFlag++;
                 }
                 //onMyBeaconChanged(intent.getIntExtra("idBeac", 0));
             }
@@ -220,15 +225,16 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
         if(currentDegree<0)
             currentDegree = 360+currentDegree;
         String directions = "";
-        if(currentDegree>=340 ||currentDegree<20)
+        if(currentDegree>=330 ||currentDegree<30)
             directions = "vai DRITTO";
-        else if(currentDegree>=20 &&currentDegree<160)
+        else if(currentDegree>=30 &&currentDegree<150)
             directions = "gira a DESTRA";
-        else if(currentDegree>=160 &&currentDegree<200)
+        else if(currentDegree>=150 &&currentDegree<210)
             directions = "torna INDIETRO";
-        else if(currentDegree>=200 &&currentDegree<340)
+        else if(currentDegree>=210 &&currentDegree<330)
             directions = "gira a SINISTRA";
-        if(directions!=oldDirection)
+        //Log.d("degree: " + currentDegree, "destin: " + destinationDegree);
+        if(!directions.equals(oldDirection) && !textDirections.getText().toString().equals(arrivo))
         {
             oldDirection = directions;
             textDirections.setText(directions);
@@ -260,12 +266,16 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
         Log.d("mybeacon", Integer.toString(myBeacon.getIdb()));
 
         Log.d("GETNEXT di", Integer.toString(myBeacon.getIdb()) +", "+ Integer.toString(destinationBeacon.getIdb()));
-        idNextBeacon = search.getNext(myBeacon.getIdb(),destinationBeacon.getIdb());
-        //List<Integer> path = search.getPath(myBeacon.getIdb(),destinationBeacon.getIdb());
-        Log.d("nextbeacon", Integer.toString(idNextBeacon));
-        //System.out.println("Path di ricerca: " + Arrays.toString(path.toArray()));
 
-        destinationDegree = getNextBeaconDegree(idNextBeacon);
+        if (myBeacon.getIdb() == destinationBeacon.getIdb() && rangingFlag > 3){
+            textDirections.setText(arrivo);
+            tts.speak(arrivo, TextToSpeech.QUEUE_FLUSH, null, null);
+        }
+        else{
+            idNextBeacon = search.getNext(myBeacon.getIdb(),destinationBeacon.getIdb());
+            Log.d("nextbeacon", Integer.toString(idNextBeacon));
+            destinationDegree = getNextBeaconDegree(idNextBeacon);
+        }
         drawMethod();
     }
 

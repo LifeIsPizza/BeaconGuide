@@ -16,8 +16,8 @@ public class PathMinimo {
     
     public PathMinimo(LinkedList<Node> minPath){
         this.cost = Integer.MAX_VALUE;
-        this.path = new LinkedList<>();
-        numNodes = 0;
+        this.path = new LinkedList<>(minPath);
+        numNodes = path.size();
     }
     
     public int getNumNodes(){
@@ -48,6 +48,9 @@ public class PathMinimo {
     }
     
     public int getNext(){
-        return path.get(1).getName();
+        if(numNodes <2)
+            return path.get(0).getName();
+        else
+            return path.get(1).getName();
     }
 }

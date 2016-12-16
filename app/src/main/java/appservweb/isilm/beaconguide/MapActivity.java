@@ -20,6 +20,7 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.Display;
 import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.widget.ImageView;
@@ -57,6 +58,10 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
     private ArrayList<Graph> graphs;
     // device sensor manager
     private SensorManager mSensorManager;
+
+    private int phoneOrientation = 0;
+    Display display;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -112,6 +117,8 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
                 new IntentFilter("intent_nearest"));
 
 
+
+        display = ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
     }
 
 
@@ -218,12 +225,20 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
         currentDegree = Math.round(sensorEvent.values[0]);
+
+        phoneOrientation = display.getRotation()*90;
+        phoneOrientation = (360 - phoneOrientation)%360;
+
         //Log.d("degree: " + currentDegree, "MainMenu");
         currentDegree = (int)destinationDegree -currentDegree;
         //Log.d("degree: " + currentDegree, "MainMenu");
 
         if(currentDegree<0)
             currentDegree = 360+currentDegree;
+
+        currentDegree = (currentDegree + phoneOrientation)%360;
+
+
         String directions = "";
         if(currentDegree>=330 ||currentDegree<30)
             directions = "vai DRITTO";

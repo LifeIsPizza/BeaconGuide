@@ -6,7 +6,7 @@
     <ImageView
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:background="@drawable/aulab"
+        android:background="@color/uniboRed"
         android:scaleType="fitXY"
         android:id="@+id/imageView2" />
 

@@ -48,7 +48,6 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
     private int viewHeight;
     private String oldDirection = "";
     private final String arrivo = "Arrivato a Destinazione";
-    private int rangingFlag = 0;
 
     private float currentDegree = 0;
     private int destinationDegree;
@@ -62,6 +61,8 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
     private int phoneOrientation = 0;
     Display display;
 
+    private int lastIdReceived = -1;
+    private int idReceivedCount = 0;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -102,13 +103,6 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
             @Override
             public void onGlobalLayout() {
                 mapView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                //int myBeaconId = 0;
-                //myBeacon = findInList(myBeaconId);
-                //idNextBeacon = search.getNext(myBeacon.getIdb(),destinationBeacon.getIdb());
-                //destinationDegree = getNextBeaconDegree(idNextBeacon);
-                //loadNewMap();
-
-                //drawMethod();
             }
         });
 
@@ -172,23 +166,35 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
         public void onReceive(Context context, Intent intent) {
             if(intent.getIntExtra("id", 0) == 3) { //ID = 3, è il nuovo beacon
                 Log.d("MessaggioRic", Integer.toString(intent.getIntExtra("idBeac", 0)));
-                /*
-                Beacon nearest;
-                nearest = (Beacon) intent.getSerializableExtra("nearest");
-                onMyBeaconChanged(nearest.getIdb());
-                */
+
                 if (myBeacon == null){
                     onMyBeaconChanged(intent.getIntExtra("idBeac", 0));
+                    lastIdReceived = intent.getIntExtra("idBeac", 0);
+                    idReceivedCount = 0;
                 }
                 else {
-                    if (intent.getIntExtra("idBeac", 0) != myBeacon.getIdb()){
-                        onMyBeaconChanged(intent.getIntExtra("idBeac", 0));
-                        rangingFlag = 0;
+                    int newBeacon = intent.getIntExtra("idBeac", 0);
+                    if (newBeacon != myBeacon.getIdb()){
+                        if(isANearby(newBeacon)) {
+                            Log.d("is a nearby","is true");
+                            onMyBeaconChanged(newBeacon);
+                        }
+                        else
+                        {
+                            if(newBeacon == lastIdReceived) {
+                                idReceivedCount++;
+                                if (idReceivedCount == 4) {
+                                    myBeacon = findInList(lastIdReceived);
+                                    onMyBeaconChanged(newBeacon);
+                                }
+                            }
+                            else {
+                                lastIdReceived = newBeacon;
+                                idReceivedCount = 1;
+                            }
+                        }
                     }
-                    else
-                        rangingFlag++;
                 }
-                //onMyBeaconChanged(intent.getIntExtra("idBeac", 0));
             }
         }
     };
@@ -229,9 +235,7 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
         phoneOrientation = display.getRotation()*90;
         phoneOrientation = (360 - phoneOrientation)%360;
 
-        //Log.d("degree: " + currentDegree, "MainMenu");
         currentDegree = (int)destinationDegree -currentDegree;
-        //Log.d("degree: " + currentDegree, "MainMenu");
 
         if(currentDegree<0)
             currentDegree = 360+currentDegree;
@@ -248,14 +252,11 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
             directions = "torna INDIETRO";
         else if(currentDegree>=210 &&currentDegree<330)
             directions = "gira a SINISTRA";
-        //Log.d("degree: " + currentDegree, "destin: " + destinationDegree);
         if(!directions.equals(oldDirection) && !textDirections.getText().toString().equals(arrivo))
         {
             oldDirection = directions;
             textDirections.setText(directions);
             tts.speak(oldDirection, TextToSpeech.QUEUE_FLUSH, null, null);
-            //if (speaker != null)
-            //    speaker.speakItem(oldDirection);
         }
     }
 
@@ -276,13 +277,12 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
         else {
             myBeacon = findInList(newID);
         }
-
         Log.d("destin", Integer.toString(destinationBeacon.getIdb()));
         Log.d("mybeacon", Integer.toString(myBeacon.getIdb()));
 
         Log.d("GETNEXT di", Integer.toString(myBeacon.getIdb()) +", "+ Integer.toString(destinationBeacon.getIdb()));
 
-        if (myBeacon.getIdb() == destinationBeacon.getIdb() && rangingFlag > 3){
+        if (myBeacon.getIdb() == destinationBeacon.getIdb()){
             textDirections.setText(arrivo);
             tts.speak(arrivo, TextToSpeech.QUEUE_FLUSH, null, null);
         }
@@ -292,6 +292,18 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
             destinationDegree = getNextBeaconDegree(idNextBeacon);
         }
         drawMethod();
+    }
+
+    private boolean isANearby(int newID) {
+        //TODO getVicini o getVic_dis!!!!!!!!!!!!!!!!!!!!!!!
+        boolean isANearby = false;
+        for (Nearby n : myBeacon.getVicini()) {
+            if(n.getIde()==newID) {
+                Log.d(n.getIde()+ "",newID+ "");
+                isANearby = true;
+            }
+        }
+        return  isANearby;
     }
 
     private void loadNewMap() {

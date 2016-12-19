@@ -5,6 +5,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.speech.tts.TextToSpeech;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
@@ -26,6 +28,8 @@ public class BeaconsMenu extends AppCompatActivity implements TextToSpeech.OnIni
     private ArrayAdapter<String> adapter;
     private ArrayList<Beacon> beacons;
     private ArrayList<Graph> graphs;
+    private boolean blindFlag;
+    private boolean handicapFlag;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +48,9 @@ public class BeaconsMenu extends AppCompatActivity implements TextToSpeech.OnIni
         }
 
         graphs = (ArrayList<Graph>) intent.getSerializableExtra("graphs");
+        blindFlag = intent.getBooleanExtra("blindFlag", true);
+        handicapFlag = intent.getBooleanExtra("handicapFlag", true);
+
 
 
 
@@ -95,6 +102,8 @@ public class BeaconsMenu extends AppCompatActivity implements TextToSpeech.OnIni
         Intent changeActivity = new Intent(this, MapActivity.class);
         changeActivity.putExtra("beacons", beacons);
         changeActivity.putExtra("graphs", graphs);
+        changeActivity.putExtra("blindFlag", blindFlag);
+        changeActivity.putExtra("handicapFlag", handicapFlag);
         if(graphs.isEmpty())
             Log.d("CheckinGraphs", "Empty");
         else
@@ -140,13 +149,28 @@ public class BeaconsMenu extends AppCompatActivity implements TextToSpeech.OnIni
     @Override
     public void onResume() {
         super.onResume();
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        blindFlag = settings.getBoolean("blindFlag", true);
+        handicapFlag = settings.getBoolean("handicapFlag", false);
+        if (blindFlag) {
+            setBlindSpeaker();
+        }
+        else{
+            removeBlindSpeaker();
+        }
+    }
+
+
+
+    public void setBlindSpeaker(){
         speaker = new ListViewSpeaker(this, this);
         menuListItems.setLongClickable(true);
         menuListItems.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Object listItem = menuListItems.getItemAtPosition(position);
-                speaker.speakItem(listItem.toString());
+                if (speaker.isOn())
+                    speaker.speakItem(listItem.toString());
             }
         });
         menuListItems.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener(){
@@ -154,11 +178,25 @@ public class BeaconsMenu extends AppCompatActivity implements TextToSpeech.OnIni
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
                 Log.v("main long clicked","pos: " + position);
                 Object listItem = menuListItems.getItemAtPosition(position);
-                speaker.speakItem(listItem.toString());
+                if (speaker.isOn())
+                    speaker.speakItem(listItem.toString());
                 changeAct(beacons, graphs, listItem.toString());
                 return true;
             }
 
+        });
+    }
+
+    public void removeBlindSpeaker(){
+        if (speaker != null)
+            speaker.destroy();
+        menuListItems.setLongClickable(false);
+        menuListItems.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Object listItem = menuListItems.getItemAtPosition(position);
+                changeAct(beacons, graphs, listItem.toString());
+            }
         });
     }
 }

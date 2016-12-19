@@ -9,11 +9,13 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
+import android.preference.PreferenceManager;
 import android.speech.tts.TextToSpeech;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
@@ -45,6 +47,8 @@ public class MainMenu extends AppCompatActivity implements TextToSpeech.OnInitLi
     private ArrayList<String> values;
     private ArrayAdapter<String> adapter;
     private BluetoothAdapter mBluetoothAdapter;
+    private boolean blindFlag = true;
+    private boolean handicapFlag = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -121,26 +125,15 @@ public class MainMenu extends AppCompatActivity implements TextToSpeech.OnInitLi
         checkNetwork();
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         checkBluetooth(mBluetoothAdapter);
-        speaker = new ListViewSpeaker(this, this);
-        menuListItems.setLongClickable(true);
-        menuListItems.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Object listItem = menuListItems.getItemAtPosition(position);
-                speaker.speakItem(listItem.toString());
-            }
-        });
-        menuListItems.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener(){
-            @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                Log.v("main long clicked","pos: " + position);
-                Object listItem = menuListItems.getItemAtPosition(position);
-                speaker.speakItem(listItem.toString());
-                sendMessage(position);
-                return true;
-            }
-
-        });
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        blindFlag = settings.getBoolean("blindFlag", true);
+        handicapFlag = settings.getBoolean("handicapFlag", false);
+        if (blindFlag) {
+            setBlindSpeaker();
+        }
+        else{
+            removeBlindSpeaker();
+        }
     }
 
     private void sendMessage(int id) {
@@ -149,6 +142,8 @@ public class MainMenu extends AppCompatActivity implements TextToSpeech.OnInitLi
         Log.d("SendMessageMainMenu", selected);
         intent.putExtra("MainMenuClicked", selected);
         intent.putExtra("message", "MessageMainMenuDescr");
+        intent.putExtra("blindFlag", blindFlag);
+        intent.putExtra("handicapFlag", handicapFlag);
         LocalBroadcastManager.getInstance(this).sendBroadcastSync(intent);
     }
 
@@ -206,8 +201,47 @@ public class MainMenu extends AppCompatActivity implements TextToSpeech.OnInitLi
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.options, menu);
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        SharedPreferences.Editor editor = settings.edit();
+        boolean isCheckedBlind = settings.getBoolean("blindFlag", true);
+        MenuItem item = menu.findItem(R.id.blind);
+        item.setChecked(isCheckedBlind);
+        boolean isCheckedHandicap = settings.getBoolean("handicapFlag", false);
+        item = menu.findItem(R.id.handicap);
+        item.setChecked(isCheckedHandicap);
+
         return true;
     }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        item.setChecked(!item.isChecked());
+        //SharedPreferences settings = getSharedPreferences("settings", 0);
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        SharedPreferences.Editor editor = settings.edit();
+        int id = item.getItemId();
+        switch (id){
+            case R.id.blind: blindFlag = item.isChecked();
+                editor.putBoolean("blindFlag", item.isChecked());
+                if(!blindFlag) {
+                    removeBlindSpeaker();
+                }
+                else{
+                    speaker = new ListViewSpeaker(this, this);
+                    setBlindSpeaker();
+                }
+                editor.commit();
+                break;
+            case R.id.handicap: handicapFlag = item.isChecked();
+                editor.putBoolean("handicapFlag", item.isChecked());
+                editor.commit();
+                break;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+
 
     //Check se c'è connessione ad internet, ritorna true/false
     public boolean isOnline() {
@@ -264,5 +298,43 @@ public class MainMenu extends AppCompatActivity implements TextToSpeech.OnInitLi
         speaker.destroy();
         super.onDestroy();
     }
+
+    public void setBlindSpeaker(){
+        speaker = new ListViewSpeaker(this, this);
+        menuListItems.setLongClickable(true);
+        menuListItems.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Object listItem = menuListItems.getItemAtPosition(position);
+                if (speaker.isOn())
+                    speaker.speakItem(listItem.toString());
+            }
+        });
+        menuListItems.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener(){
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                Log.v("main long clicked","pos: " + position);
+                Object listItem = menuListItems.getItemAtPosition(position);
+                if (speaker.isOn())
+                    speaker.speakItem(listItem.toString());
+                sendMessage(position);
+                return true;
+            }
+
+        });
+    }
+
+    public void removeBlindSpeaker(){
+        if (speaker != null)
+            speaker.destroy();
+        menuListItems.setLongClickable(false);
+        menuListItems.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                sendMessage(position);
+            }
+        });
+    }
+
 }
 

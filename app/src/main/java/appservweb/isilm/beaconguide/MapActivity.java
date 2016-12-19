@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -13,6 +14,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.preference.PreferenceManager;
 import android.speech.tts.TextToSpeech;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
@@ -48,7 +50,6 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
     private int viewHeight;
     private String oldDirection = "";
     private final String arrivo = "Arrivato a Destinazione";
-    private int rangingFlag = 0;
 
     private float currentDegree = 0;
     private int destinationDegree;
@@ -61,6 +62,11 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
 
     private int phoneOrientation = 0;
     Display display;
+    private boolean blindFlag;
+    private boolean handicapFlag;
+
+    private int lastIdReceived = -1;
+    private int idReceivedCount = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,7 +98,21 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
         destinationBeacon = selectDestBeacon(intent.getStringExtra("selected"));
         graphs = (ArrayList<Graph>) intent.getSerializableExtra("graphs");
         //1 è disabili
-        graph = graphs.get(0);
+
+        //blindFlag = intent.getBooleanExtra("blindFlag", true);
+        //handicapFlag = intent.getBooleanExtra("handicapFlag", true);
+
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        blindFlag = settings.getBoolean("blindFlag", true);
+        handicapFlag = settings.getBoolean("handicapFlag", false);
+        if (handicapFlag){
+            graph = graphs.get(1);
+            Log.d("HandicapFlag", "Flag is true");
+        }
+        else {
+            graph = graphs.get(0);
+            Log.d("HandicapFlag", "Flag is false");
+        }
 
         graph.toStringa();
         //Log.d("graph",graph.toString());
@@ -139,7 +159,8 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
             tts.shutdown();
         }
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        resumeTTS();
+        if (blindFlag)
+            resumeTTS();
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION),
                 SensorManager.SENSOR_DELAY_NORMAL);
@@ -179,14 +200,31 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
                 */
                 if (myBeacon == null){
                     onMyBeaconChanged(intent.getIntExtra("idBeac", 0));
+                    lastIdReceived = intent.getIntExtra("idBeac", 0);
+                    idReceivedCount = 0;
                 }
                 else {
-                    if (intent.getIntExtra("idBeac", 0) != myBeacon.getIdb()){
-                        onMyBeaconChanged(intent.getIntExtra("idBeac", 0));
-                        rangingFlag = 0;
+                    int newBeacon = intent.getIntExtra("idBeac", 0);
+                    if (newBeacon != myBeacon.getIdb()){
+                        if(isANearby(newBeacon)) {
+                            Log.d("is a nearby","is true");
+                            onMyBeaconChanged(newBeacon);
+                        }
+                        else
+                        {
+                            if(newBeacon == lastIdReceived) {
+                                idReceivedCount++;
+                                if (idReceivedCount == 4) {
+                                    myBeacon = findInList(lastIdReceived);
+                                    onMyBeaconChanged(newBeacon);
+                                }
+                            }
+                            else {
+                                lastIdReceived = newBeacon;
+                                idReceivedCount = 1;
+                            }
+                        }
                     }
-                    else
-                        rangingFlag++;
                 }
                 //onMyBeaconChanged(intent.getIntExtra("idBeac", 0));
             }
@@ -253,7 +291,8 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
         {
             oldDirection = directions;
             textDirections.setText(directions);
-            tts.speak(oldDirection, TextToSpeech.QUEUE_FLUSH, null, null);
+            if (blindFlag)
+                tts.speak(oldDirection, TextToSpeech.QUEUE_FLUSH, null, null);
             //if (speaker != null)
             //    speaker.speakItem(oldDirection);
         }
@@ -282,7 +321,7 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
 
         Log.d("GETNEXT di", Integer.toString(myBeacon.getIdb()) +", "+ Integer.toString(destinationBeacon.getIdb()));
 
-        if (myBeacon.getIdb() == destinationBeacon.getIdb() && rangingFlag > 3){
+        if (myBeacon.getIdb() == destinationBeacon.getIdb()){
             textDirections.setText(arrivo);
             tts.speak(arrivo, TextToSpeech.QUEUE_FLUSH, null, null);
         }
@@ -359,6 +398,29 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
             }
             return null;
 
+    }
+
+    private boolean isANearby(int newID) {
+
+        boolean isANearby = false;
+        if (handicapFlag){
+            for (Nearby n : myBeacon.getVic_dis()) {
+                if(n.getIde()==newID) {
+                    Log.d(n.getIde()+ "",newID+ "");
+                    isANearby = true;
+                }
+            }
+        }
+        else{
+            for (Nearby n : myBeacon.getVicini()) {
+                if(n.getIde()==newID) {
+                    Log.d(n.getIde()+ "",newID+ "");
+                    isANearby = true;
+                }
+            }
+        }
+
+        return  isANearby;
     }
 
 }

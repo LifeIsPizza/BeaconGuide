@@ -3,5 +3,7 @@
     <string name="title_activity_main">MainActivity</string>
     <string name="mainmenu_title">Beacon Guide App</string>
     <string name="options">Opzioni</string>
+    <string name="handicap">Portatore di Handicap</string>
+    <string name="blind">Non Vedente</string>
     <string name="downloadMapsButton">Download New Map</string>
 </resources>

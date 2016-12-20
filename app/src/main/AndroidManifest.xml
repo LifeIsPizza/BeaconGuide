@@ -30,8 +30,7 @@
             android:name=".BeaconsMenu"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".MapActivity"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:screenOrientation="portrait"></activity>
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>

@@ -133,11 +133,6 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
         });
 
 
-        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
-                new IntentFilter("intent_nearest"));
-
-
-
         display = ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
     }
 
@@ -164,6 +159,8 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION),
                 SensorManager.SENSOR_DELAY_NORMAL);
+        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
+                new IntentFilter("intent_nearest"));
         // for the system's orientation sensor registered listeners
 
     }
@@ -177,9 +174,11 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
         }
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         mSensorManager.unregisterListener(this);
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
     }
     @Override
     public void onBackPressed() {
+        super.onBackPressed();
         Log.d("CDA", "onBackPressed Called");
         Intent changeActivity = new Intent(this, BeaconsMenu.class);
         changeActivity.putExtra("beacons", beacons);
@@ -206,23 +205,20 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
                 else {
                     int newBeacon = intent.getIntExtra("idBeac", 0);
                     if (newBeacon != myBeacon.getIdb()){
-                        if(isANearby(newBeacon)) {
-                            Log.d("is a nearby","is true");
-                            onMyBeaconChanged(newBeacon);
+                        if(newBeacon == lastIdReceived) {
+                            idReceivedCount++;
+                            if (idReceivedCount >= 5 && isANearby(newBeacon)) {
+                                myBeacon = findInList(lastIdReceived);
+                                onMyBeaconChanged(newBeacon);
+                            }
+                            else if(idReceivedCount >= 10) {
+                                myBeacon = findInList(lastIdReceived);
+                                onMyBeaconChanged(newBeacon);
+                            }
                         }
-                        else
-                        {
-                            if(newBeacon == lastIdReceived) {
-                                idReceivedCount++;
-                                if (idReceivedCount == 4) {
-                                    myBeacon = findInList(lastIdReceived);
-                                    onMyBeaconChanged(newBeacon);
-                                }
-                            }
-                            else {
-                                lastIdReceived = newBeacon;
-                                idReceivedCount = 1;
-                            }
+                        else {
+                            lastIdReceived = newBeacon;
+                            idReceivedCount = 1;
                         }
                     }
                 }

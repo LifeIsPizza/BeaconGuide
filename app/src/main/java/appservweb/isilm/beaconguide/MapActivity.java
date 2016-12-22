@@ -207,11 +207,15 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
                     if (newBeacon != myBeacon.getIdb()){
                         if(newBeacon == lastIdReceived) {
                             idReceivedCount++;
-                            if (idReceivedCount >= 5 && isANearby(newBeacon)) {
+                            if (idReceivedCount >=3 && idNextBeacon == newBeacon){
                                 myBeacon = findInList(lastIdReceived);
                                 onMyBeaconChanged(newBeacon);
                             }
-                            else if(idReceivedCount >= 10) {
+                            else if (idReceivedCount >= 6 && isANearby(newBeacon)) {
+                                myBeacon = findInList(lastIdReceived);
+                                onMyBeaconChanged(newBeacon);
+                            }
+                            else if(idReceivedCount >= 12) {
                                 myBeacon = findInList(lastIdReceived);
                                 onMyBeaconChanged(newBeacon);
                             }

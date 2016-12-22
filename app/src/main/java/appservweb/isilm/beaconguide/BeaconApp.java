@@ -446,6 +446,7 @@ public class BeaconApp extends Application {
         try {
             //Retrieving della stringa JSON da url
             jsonStringMaps = new AsyncJsonGet().execute(stringURL+"?map="+location).get();
+            //new AsyncJsonGet().execute(stringURL+"?map="+location);
             Log.d("GetMapsJson1", "Stringa: " + jsonStringMaps);
         } catch (Exception e) {
             Log.d("GetMapsJson2", "FAIL! " + jsonStringMaps);

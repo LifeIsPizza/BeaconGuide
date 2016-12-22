@@ -319,7 +319,8 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
 
         if (myBeacon.getIdb() == destinationBeacon.getIdb()){
             textDirections.setText(arrivo);
-            tts.speak(arrivo, TextToSpeech.QUEUE_FLUSH, null, null);
+            if (blindFlag)
+                tts.speak(arrivo, TextToSpeech.QUEUE_FLUSH, null, null);
         }
         else{
             idNextBeacon = search.getNext(myBeacon.getIdb(),destinationBeacon.getIdb());

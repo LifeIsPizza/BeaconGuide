@@ -6,11 +6,11 @@
 - [x] Retrieve del JSON da url statico
 - [x] Librerie di lettura vocale con click
 - [x] Mappe di prova
-- [ ] Portale online di modifica/aggiunta beacon (Gigi)
-- [ ] Gestione del click/click lungo per lettura/selezione (Fant)
-- [ ] Lettura del JSON e strutturazione del grafo/beacon per algoritmo (Fant/Gigi)
-- [ ] Message passing tra UI thread e background thread di ranging (Fant)
+- [x] Portale online di modifica/aggiunta beacon (Gigi)
+- [x] Gestione del click/click lungo per lettura/selezione (Fant)
+- [x] Lettura del JSON e strutturazione del grafo/beacon per algoritmo (Fant/Gigi)
+- [x] Message passing tra UI thread e background thread di ranging (Fant)
 - [x] Gestione Bussola (Massa)
-- [ ] Gestione mappe e movimento indicatori (coordinate su immagine di sfondo) (Ele/Massa)
-- [ ] Algoritmi sui due grafi scale/noscale (Gigi/?)
-- [ ] Gestione libreria lettura vocale (default on, disabilitabile da opzioni) (Fant/?)
+- [x] Gestione mappe e movimento indicatori (coordinate su immagine di sfondo) (Ele/Massa)
+- [x] Algoritmi sui due grafi scale/noscale (Gigi/?)
+- [x] Gestione libreria lettura vocale (default on, disabilitabile da opzioni) (Fant/?)
